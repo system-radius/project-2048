@@ -146,16 +146,20 @@ public class FieldController : MonoBehaviour
                     if (j == mainAxis.start) continue;
 
                     int lastEmptyIndex = -1;
-                    for (int k = mainAxis.start; k != j; k += mainAxis.update)
+                    for (int k = j - mainAxis.update; k != mainAxis.start - mainAxis.update; k -= mainAxis.update)
                     {
                         int tempX = horizontal ? k : i;
                         int tempY = horizontal ? i : k;
 
                         var tempTile = valueTiles[tempX, tempY];
-                        if (tempTile == null)
+                        if (tempTile != null)
+                        {
+                            hasMovement = tempTile.AttemptMerge(tile) || hasMovement;
+                            break;
+                        }
+                        else 
                         {
                             lastEmptyIndex = k;
-                            break;
                         }
                     }
 
