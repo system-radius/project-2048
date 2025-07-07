@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FieldController : MonoBehaviour
+public class FieldController : MonoBehaviour, IScoreChangeTrigger
 {
     [SerializeField]
     private CameraScaleController worldCamera;
@@ -30,6 +30,11 @@ public class FieldController : MonoBehaviour
     private ValueTileController[,] valueTiles;
     private AxisData mainAxis;
     private AxisData staticAxis;
+
+    private int totalScore;
+
+    public event System.Action<int> OnIncrementScore;
+    public event System.Action<int> OnUpdateScore;
 
     private void Awake()
     {
@@ -77,6 +82,9 @@ public class FieldController : MonoBehaviour
 
     private void Restart()
     {
+        totalScore = 0;
+        OnUpdateScore?.Invoke(totalScore);
+
         if (valueTiles != null)
         {
             foreach (ValueTileController valueTile in valueTiles)
@@ -140,6 +148,7 @@ public class FieldController : MonoBehaviour
 
     private bool MoveTiles(AxisData mainAxis, AxisData staticAxis, bool horizontal)
     {
+        int moveMergeScore = 0;
         bool hasMovement = false;
         for (int i = staticAxis.start; i != staticAxis.end; i += staticAxis.update)
         {
@@ -162,13 +171,15 @@ public class FieldController : MonoBehaviour
                         var tempTile = valueTiles[tempX, tempY];
                         if (tempTile != null)
                         {
-                            if (tempTile.AttemptMerge(tile))
+                            int mergeScore = tempTile.AttemptMerge(tile);
+                            if (mergeScore != 0)
                             {
                                 Destroy(tile.gameObject);
                                 valueTiles[x, y] = null;
                                 lastEmptyIndex = -1;
                                 hasMovement = true;
                             }
+                            moveMergeScore += mergeScore;
                             break;
                         }
                         else 
@@ -187,6 +198,16 @@ public class FieldController : MonoBehaviour
                     hasMovement = true;
                 }
             }
+        }
+
+        if (moveMergeScore > 0)
+        {
+            // Fire an event to show the moveMergeScore as increment.
+            OnIncrementScore?.Invoke(moveMergeScore);
+
+            // Then fire another event to actually update the score view.
+            totalScore += moveMergeScore;
+            OnUpdateScore?.Invoke(totalScore);
         }
         return hasMovement;
     }

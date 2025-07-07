@@ -56,15 +56,15 @@ public class ValueTileController : TileController, IValueChangeTrigger
         }
     }
 
-    public bool AttemptMerge(ValueTileController that)
+    public int AttemptMerge(ValueTileController that)
     {
-        if (justMerged || this.tile.Value != that.tile.Value) return false;
+        if (justMerged || this.tile.Value != that.tile.Value) return 0;
         this.IncrementValue();
         justMerged = true;
         StartCoroutine(LerpData(new Vector3(1.2f, 1.2f, 1f), 0.1f, t => t.localScale, (t, value) => t.localScale = value,
             LerpData(Vector3.one, 0.1f, t => t.localScale, (t, value) => t.localScale = value)));
 
-        return true;
+        return this.tile.Value;
     }
 
     public void ClearMergeStatus()
