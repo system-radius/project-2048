@@ -6,6 +6,7 @@ using UnityEngine;
 public class ValueTileController : TileController, IValueChangeTrigger
 {
     public event Action<int> OnValueChange;
+    private bool justMerged = false;
 
     public void Initialize(int value)
     {
@@ -26,9 +27,6 @@ public class ValueTileController : TileController, IValueChangeTrigger
 
     public void IncrementValue()
     {
-        StartCoroutine(LerpData(new Vector3(1.2f, 1.2f, 1f), 0.05f, t => t.localScale, (t, value) => t.localScale = value,
-            LerpData(Vector3.one, 0.05f, t => t.localScale, (t, value) => t.localScale = value)));
-
         ((ValueTile) tile).IncreaseValue();
         OnValueChange?.Invoke(tile.Value);
     }
@@ -60,10 +58,17 @@ public class ValueTileController : TileController, IValueChangeTrigger
 
     public bool AttemptMerge(ValueTileController that)
     {
-        if (this.tile.Value != that.tile.Value) return false;
-
-        Destroy(that.gameObject);
+        if (justMerged || this.tile.Value != that.tile.Value) return false;
         this.IncrementValue();
+        justMerged = true;
+        StartCoroutine(LerpData(new Vector3(1.2f, 1.2f, 1f), 0.1f, t => t.localScale, (t, value) => t.localScale = value,
+            LerpData(Vector3.one, 0.1f, t => t.localScale, (t, value) => t.localScale = value)));
+
         return true;
+    }
+
+    public void ClearMergeStatus()
+    {
+        justMerged = false;
     }
 }

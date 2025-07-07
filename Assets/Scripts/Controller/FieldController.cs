@@ -92,6 +92,14 @@ public class FieldController : MonoBehaviour
 
     private void ProcessMovement(Vector2Int direction)
     {
+        foreach (ValueTileController valueTile in valueTiles)
+        {
+            if (valueTile != null)
+            {
+                valueTile.ClearMergeStatus();
+            }
+        }
+
         // Do the actual movement for the tiles according to the direction.
         bool hasMovement = false;
         if (direction.x != 0)
@@ -154,7 +162,13 @@ public class FieldController : MonoBehaviour
                         var tempTile = valueTiles[tempX, tempY];
                         if (tempTile != null)
                         {
-                            hasMovement = tempTile.AttemptMerge(tile) || hasMovement;
+                            if (tempTile.AttemptMerge(tile))
+                            {
+                                Destroy(tile.gameObject);
+                                valueTiles[x, y] = null;
+                                lastEmptyIndex = -1;
+                                hasMovement = true;
+                            }
                             break;
                         }
                         else 
