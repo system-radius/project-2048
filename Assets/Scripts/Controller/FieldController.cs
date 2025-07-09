@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FieldController : MonoBehaviour, IScoreChangeTrigger
+public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrigger
 {
     [SerializeField]
     private CameraScaleController worldCamera;
@@ -35,6 +35,8 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger
 
     public event System.Action<int> OnIncrementScore;
     public event System.Action<int> OnUpdateScore;
+    public event System.Action OnGameOver;
+    public event System.Action OnGameRestart;
 
     private void Awake()
     {
@@ -83,6 +85,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger
     private void Restart()
     {
         totalScore = 0;
+        OnGameRestart?.Invoke();
         OnUpdateScore?.Invoke(totalScore);
 
         if (valueTiles != null)
@@ -143,7 +146,15 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger
             hasMovement = MoveTiles(mainAxis, staticAxis, false);
         }
 
-        if (hasMovement) AddTile();
+        if (hasMovement)
+        {
+            AddTile();
+            // Additional checking for if the new tile was not added due to the board being full.
+            if (!HasNullTile() && !CheckMergePossibilities())
+            {
+                OnGameOver?.Invoke();
+            }
+        }
     }
 
     private bool MoveTiles(AxisData mainAxis, AxisData staticAxis, bool horizontal)
@@ -235,8 +246,6 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger
 
             tileAdded = true;
         } while (!tileAdded);
-
-        // Additional checking for if the new tile was not added due to the board being full.
     }
 
     private bool HasNullTile()
@@ -252,6 +261,41 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger
         return false;
     }
 
+    private bool CheckMergePossibilities()
+    {
+        foreach (ValueTileController tile in valueTiles)
+        {
+            if (tile == null) continue;
+            if (CheckTileMergePossibility(tile)) return true;
+        }
+
+        return false;
+    }
+
+    private bool CheckTileMergePossibility(ValueTileController tile)
+    {
+        int tileX = (int) tile.transform.position.x;
+        int tileY = (int) tile.transform.position.y;
+        int value = tile.GetValue();
+
+        for (int x = -1; x <= 1; x++)
+        {
+            int checkX = tileX + x;
+            if (checkX < 0 || checkX >= sizeX) continue;
+            for (int y = -1; y <= 1; y++)
+            {
+                int checkY = tileY + y;
+                if (checkY < 0 || checkY >= sizeY) continue;
+                if (Mathf.Abs(x) == Mathf.Abs(y)) continue;
+
+                var checkTile = valueTiles[checkX, checkY];
+                if (checkTile == null) continue;
+                if (value == checkTile.GetValue()) return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 public class AxisData

@@ -71,4 +71,9 @@ public class ValueTileController : TileController, IValueChangeTrigger
     {
         justMerged = false;
     }
+
+    public int GetValue()
+    {
+        return tile.Value;
+    }
 }
