@@ -10,28 +10,9 @@ public class ScoreView : MonoBehaviour
     [SerializeField]
     private GameObject incrementTextPanelPrefab;
 
-    [SerializeField]
-    private GameObject scoreControllerObject;
-    private IScoreChangeTrigger scoreChangeTrigger;
+    
 
-    private void Awake()
-    {
-        scoreChangeTrigger = scoreControllerObject.GetComponent<IScoreChangeTrigger>();
-    }
-
-    private void OnEnable()
-    {
-        scoreChangeTrigger.OnIncrementScore += ShowIncrement;
-        scoreChangeTrigger.OnUpdateScore += UpdateScore;
-    }
-
-    private void OnDisable()
-    {
-        scoreChangeTrigger.OnIncrementScore -= ShowIncrement;
-        scoreChangeTrigger.OnUpdateScore -= UpdateScore;
-    }
-
-    private void ShowIncrement(int score)
+    public void ShowIncrement(int score)
     {
         GameObject incrementTextPanel = Instantiate(incrementTextPanelPrefab, transform);
         var textObject = incrementTextPanel.GetComponent<TextMeshProUGUI>();
@@ -39,7 +20,7 @@ public class ScoreView : MonoBehaviour
         StartCoroutine(MoveFadeOut(textObject, new Vector3(0, 20, 0), 1f));
     }
 
-    private void UpdateScore(int score)
+    public void UpdateScore(int score)
     {
         string scoreText = score.ToString();
         if (score > 10_000)

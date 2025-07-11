@@ -16,7 +16,7 @@ public class ValueTileController : TileController, IValueChangeTrigger
         }
 
         OnValueChange?.Invoke(value);
-        if (value > 2)
+        while (value > tile.Value)
         {
             IncrementValue();
         }

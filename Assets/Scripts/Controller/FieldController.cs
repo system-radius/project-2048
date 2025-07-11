@@ -45,6 +45,9 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         staticAxis = new AxisData();
         staticAxis.start = 0;
         staticAxis.update = 1;
+
+        LoadBackground();
+        LoadState();
     }
 
     private void OnEnable()
@@ -59,7 +62,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         swipeDetection.OnSwipe -= ProcessMovement;
     }
 
-    private void Start()
+    private void LoadBackground()
     {
         container = new GameObject("Container");
         GameObject background = Instantiate(backgroundPrefab, container.transform);
@@ -79,14 +82,68 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         worldCamera.AdjustCameraSize(container.transform);
         container.transform.position = new Vector3(0, 0, 10);
 
-        Restart();
+        Restart(false);
+    }
+
+    private void OnApplicationPause(bool pause)
+    {
+        if (pause)
+        {
+            SaveState();
+            PlayerPrefs.Save();
+        }
+    }
+
+    private void SaveState()
+    {
+        PlayerPrefs.SetInt("sizeX", sizeX);
+        PlayerPrefs.SetInt("sizeY", sizeY);
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0; y < sizeY; y++)
+            {
+                int value = 0;
+                var tile = valueTiles[x, y];
+                if (tile != null)
+                {
+                    value = tile.GetValue();
+                }
+                PlayerPrefs.SetInt(x + "_" + y, value);
+            }
+        }
+    }
+
+    private void LoadState()
+    {
+        int sizeX = PlayerPrefs.GetInt("sizeX", -1);
+        int sizeY = PlayerPrefs.GetInt("sizeY", -1);
+        if (this.sizeX != sizeX || this.sizeY != sizeY) {
+            AddTile();
+            AddTile();
+            return;
+        }
+
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0;y < sizeY; y++)
+            {
+                int value = PlayerPrefs.GetInt((x + "_" + y), 0);
+                if (value > 0)
+                {
+                    LoadTile(x, y, value);
+                }
+            }
+        }
     }
 
     private void Restart()
     {
-        totalScore = 0;
+        Restart(true);
+    }
+
+    private void Restart(bool fromButton)
+    {
         OnGameRestart?.Invoke();
-        OnUpdateScore?.Invoke(totalScore);
 
         if (valueTiles != null)
         {
@@ -97,8 +154,13 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         }
 
         valueTiles = new ValueTileController[sizeX, sizeY];
-        AddTile();
-        AddTile();
+        if (fromButton)
+        {
+            totalScore = 0;
+            OnUpdateScore?.Invoke(totalScore);
+            AddTile();
+            AddTile();
+        }
     }
 
     private void ProcessMovement(Vector2Int direction)
@@ -223,6 +285,15 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         return hasMovement;
     }
 
+    private void LoadTile(int x, int y, int value)
+    {
+        ValueTileController valueTile = Instantiate(tilePrefab);
+        valueTile.transform.position = new Vector3(x, y, 0);
+        valueTiles[x, y] = valueTile;
+
+        valueTile.Initialize(value);
+    }
+
     private void AddTile()
     {
         bool tileAdded = false;
@@ -238,11 +309,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
 
             if (valueTiles[x, y] != null) continue;
 
-            ValueTileController valueTile = Instantiate(tilePrefab);
-            valueTile.transform.position = new Vector3(x, y, 0);
-            valueTiles[x, y] = valueTile;
-
-            valueTile.Initialize((Random.Range(0, 100) > 75) ? 4 : 2);
+            LoadTile(x, y, (Random.Range(0, 100) > 75) ? 4 : 2);
 
             tileAdded = true;
         } while (!tileAdded);
