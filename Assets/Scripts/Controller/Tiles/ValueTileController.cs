@@ -18,7 +18,7 @@ public class ValueTileController : TileController, IValueChangeTrigger
         OnValueChange?.Invoke(value);
         while (value > tile.Value)
         {
-            IncrementValue();
+            ((ValueTile)tile).IncreaseValue();
         }
 
         transform.localScale = Vector3.zero;

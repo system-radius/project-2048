@@ -17,6 +17,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
 
     private void Awake()
     {
+        Application.targetFrameRate = 60;
         playerControls = new PlayerControls();
     }
 

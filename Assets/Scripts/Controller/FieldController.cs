@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrigger
@@ -46,8 +47,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         staticAxis.start = 0;
         staticAxis.update = 1;
 
-        LoadBackground();
-        LoadState();
+        //LoadState();
     }
 
     private void OnEnable()
@@ -62,8 +62,9 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         swipeDetection.OnSwipe -= ProcessMovement;
     }
 
-    private void LoadBackground()
+    private IEnumerator Start()
     {
+        yield return null;
         container = new GameObject("Container");
         GameObject background = Instantiate(backgroundPrefab, container.transform);
         float multiplier = 0.5f;
@@ -83,6 +84,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         container.transform.position = new Vector3(0, 0, 10);
 
         Restart(false);
+        LoadState();
     }
 
     private void OnApplicationPause(bool pause)
