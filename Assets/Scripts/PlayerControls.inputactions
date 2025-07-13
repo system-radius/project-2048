@@ -6,6 +6,15 @@
             "id": "0ce02543-72b2-4b41-9b91-aef945738c47",
             "actions": [
                 {
+                    "name": "Play",
+                    "type": "Button",
+                    "id": "af5a5502-7838-474b-bc78-949393af402b",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Restart",
                     "type": "Button",
                     "id": "f985cb12-635e-4f83-967b-1678a1064479",
@@ -64,6 +73,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "PrimaryTouchPosition",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c705ad53-80d2-43c4-80f2-75bce04724a5",
+                    "path": "<Gamepad>/start",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Play",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -32,12 +32,16 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
     private AxisData mainAxis;
     private AxisData staticAxis;
 
+    private bool hasWon = false;
+    private int winCondition = 2048;
+
     private int totalScore;
 
     public event System.Action<int> OnIncrementScore;
     public event System.Action<int> OnUpdateScore;
     public event System.Action OnGameOver;
     public event System.Action OnGameRestart;
+    public event System.Action OnWin;
 
     private void Awake()
     {
@@ -85,6 +89,11 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
 
         Restart(false);
         LoadState();
+
+        yield return null;
+        hasWon = PlayerPrefs.GetInt("hasWon", 0) == 1;
+        totalScore = PlayerPrefs.GetInt("currentScore", 0);
+        OnUpdateScore?.Invoke(totalScore);
     }
 
     private void OnApplicationPause(bool pause)
@@ -98,6 +107,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
 
     private void SaveState()
     {
+        PlayerPrefs.SetInt("hasWon", hasWon ? 1 : 0);
         PlayerPrefs.SetInt("sizeX", sizeX);
         PlayerPrefs.SetInt("sizeY", sizeY);
         for (int x = 0; x < sizeX; x++)
@@ -158,6 +168,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         valueTiles = new ValueTileController[sizeX, sizeY];
         if (fromButton)
         {
+            hasWon = false;
             totalScore = 0;
             OnUpdateScore?.Invoke(totalScore);
             AddTile();
@@ -213,11 +224,12 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
         if (hasMovement)
         {
             AddTile();
-            // Additional checking for if the new tile was not added due to the board being full.
-            if (!HasNullTile() && !CheckMergePossibilities())
-            {
-                OnGameOver?.Invoke();
-            }
+        }
+
+        // Additional checking for if the new tile was not added due to the board being full.
+        if (!HasNullTile() && !CheckMergePossibilities())
+        {
+            OnGameOver?.Invoke();
         }
     }
 
@@ -225,6 +237,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
     {
         int moveMergeScore = 0;
         bool hasMovement = false;
+        bool win = hasWon;
         for (int i = staticAxis.start; i != staticAxis.end; i += staticAxis.update)
         {
             for (int j = mainAxis.start; j != mainAxis.end; j += mainAxis.update)
@@ -247,6 +260,10 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
                         if (tempTile != null)
                         {
                             int mergeScore = tempTile.AttemptMerge(tile);
+                            if (!win)
+                            {
+                                win = winCondition == mergeScore;
+                            }
                             if (mergeScore != 0)
                             {
                                 Destroy(tile.gameObject);
@@ -275,6 +292,13 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
             }
         }
 
+        if (win && !hasWon)
+        {
+            hasWon = true;
+            OnWin?.Invoke();
+            SaveState();
+        }
+
         if (moveMergeScore > 0)
         {
             // Fire an event to show the moveMergeScore as increment.
@@ -289,7 +313,7 @@ public class FieldController : MonoBehaviour, IScoreChangeTrigger, IGameOverTrig
 
     private void LoadTile(int x, int y, int value)
     {
-        ValueTileController valueTile = Instantiate(tilePrefab);
+        ValueTileController valueTile = Instantiate(tilePrefab, container.transform);
         valueTile.transform.position = new Vector3(x, y, 0);
         valueTiles[x, y] = valueTile;
 

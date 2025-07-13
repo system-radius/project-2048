@@ -10,6 +10,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
     private PlayerControls playerControls;
 
     public event Action OnRestart;
+    public event Action OnPlay;
     public event Action<Vector3, float> OnStartTouch;
     public event Action<Vector3, float> OnEndTouch;
 
@@ -26,6 +27,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
         playerControls.Enable();
 
         playerControls.Touch.Restart.performed += TriggerRestart;
+        playerControls.Touch.Play.performed += TriggerPlay;
         playerControls.Touch.PrimaryTouchContact.started += TriggerTouchStart;
         playerControls.Touch.PrimaryTouchContact.canceled += TriggerTouchEnd;
     }
@@ -33,6 +35,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
     private void OnDisable()
     {
         playerControls.Touch.Restart.performed -= TriggerRestart;
+        playerControls.Touch.Play.performed -= TriggerPlay;
         playerControls.Touch.PrimaryTouchContact.started -= TriggerTouchStart;
         playerControls.Touch.PrimaryTouchContact.canceled -= TriggerTouchEnd;
 
@@ -42,6 +45,11 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
     private void TriggerRestart(InputAction.CallbackContext context)
     {
         OnRestart?.Invoke();
+    }
+
+    private void TriggerPlay(InputAction.CallbackContext context)
+    {
+        OnPlay?.Invoke();
     }
 
     private IEnumerator HandleFirstTouchNextFrame(float time)

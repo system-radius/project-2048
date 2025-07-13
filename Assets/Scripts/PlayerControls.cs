@@ -28,6 +28,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             ""id"": ""0ce02543-72b2-4b41-9b91-aef945738c47"",
             ""actions"": [
                 {
+                    ""name"": ""Play"",
+                    ""type"": ""Button"",
+                    ""id"": ""af5a5502-7838-474b-bc78-949393af402b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Restart"",
                     ""type"": ""Button"",
                     ""id"": ""f985cb12-635e-4f83-967b-1678a1064479"",
@@ -88,6 +97,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""PrimaryTouchPosition"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c705ad53-80d2-43c4-80f2-75bce04724a5"",
+                    ""path"": ""<Gamepad>/start"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Play"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -96,6 +116,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
 }");
         // Touch
         m_Touch = asset.FindActionMap("Touch", throwIfNotFound: true);
+        m_Touch_Play = m_Touch.FindAction("Play", throwIfNotFound: true);
         m_Touch_Restart = m_Touch.FindAction("Restart", throwIfNotFound: true);
         m_Touch_PrimaryTouchContact = m_Touch.FindAction("PrimaryTouchContact", throwIfNotFound: true);
         m_Touch_PrimaryTouchPosition = m_Touch.FindAction("PrimaryTouchPosition", throwIfNotFound: true);
@@ -165,6 +186,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     // Touch
     private readonly InputActionMap m_Touch;
     private List<ITouchActions> m_TouchActionsCallbackInterfaces = new List<ITouchActions>();
+    private readonly InputAction m_Touch_Play;
     private readonly InputAction m_Touch_Restart;
     private readonly InputAction m_Touch_PrimaryTouchContact;
     private readonly InputAction m_Touch_PrimaryTouchPosition;
@@ -172,6 +194,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     {
         private @PlayerControls m_Wrapper;
         public TouchActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Play => m_Wrapper.m_Touch_Play;
         public InputAction @Restart => m_Wrapper.m_Touch_Restart;
         public InputAction @PrimaryTouchContact => m_Wrapper.m_Touch_PrimaryTouchContact;
         public InputAction @PrimaryTouchPosition => m_Wrapper.m_Touch_PrimaryTouchPosition;
@@ -184,6 +207,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_TouchActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_TouchActionsCallbackInterfaces.Add(instance);
+            @Play.started += instance.OnPlay;
+            @Play.performed += instance.OnPlay;
+            @Play.canceled += instance.OnPlay;
             @Restart.started += instance.OnRestart;
             @Restart.performed += instance.OnRestart;
             @Restart.canceled += instance.OnRestart;
@@ -197,6 +223,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
 
         private void UnregisterCallbacks(ITouchActions instance)
         {
+            @Play.started -= instance.OnPlay;
+            @Play.performed -= instance.OnPlay;
+            @Play.canceled -= instance.OnPlay;
             @Restart.started -= instance.OnRestart;
             @Restart.performed -= instance.OnRestart;
             @Restart.canceled -= instance.OnRestart;
@@ -225,6 +254,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     public TouchActions @Touch => new TouchActions(this);
     public interface ITouchActions
     {
+        void OnPlay(InputAction.CallbackContext context);
         void OnRestart(InputAction.CallbackContext context);
         void OnPrimaryTouchContact(InputAction.CallbackContext context);
         void OnPrimaryTouchPosition(InputAction.CallbackContext context);

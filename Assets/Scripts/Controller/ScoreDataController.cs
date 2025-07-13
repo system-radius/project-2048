@@ -19,8 +19,6 @@ public class ScoreDataController : MonoBehaviour
         scoreChangeTrigger = scoreControllerObject.GetComponent<IScoreChangeTrigger>();
         bestScore = PlayerPrefs.GetInt("bestScore", 0);
         bestScoreView.UpdateScore(bestScore);
-        currentScore = PlayerPrefs.GetInt("currentScore", 0);
-        currentScoreView.UpdateScore(currentScore);
     }
 
     private void OnEnable()
