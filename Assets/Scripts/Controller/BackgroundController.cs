@@ -24,7 +24,18 @@ public class BackgroundController : MonoBehaviour, IDimensions
         sizeY = (int)y;
     }
 
-    private IEnumerator Start()
+    private void OnEnable()
+    {
+        StartCoroutine(StartBackground());
+    }
+
+    private void OnDisable()
+    {
+        Destroy(container);
+        container = null;
+    }
+
+    private IEnumerator StartBackground()
     {
         yield return null;
         container = new GameObject("Background");

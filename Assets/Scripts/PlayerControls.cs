@@ -55,6 +55,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Cancel"",
+                    ""type"": ""Button"",
+                    ""id"": ""506b154e-70f3-4bf8-9512-3773d6ea8be6"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""PrimaryTouchContact"",
                     ""type"": ""Button"",
                     ""id"": ""75acd733-1238-4598-bf4d-d8305e6d9549"",
@@ -121,11 +130,22 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""ad97b8fe-97c6-460a-a63e-c27302ad682f"",
-                    ""path"": ""<Keyboard>/escape"",
+                    ""path"": ""<Keyboard>/z"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Undo"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8002d087-84a9-4f3e-970f-edccfe10e35e"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -139,6 +159,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Touch_Play = m_Touch.FindAction("Play", throwIfNotFound: true);
         m_Touch_Undo = m_Touch.FindAction("Undo", throwIfNotFound: true);
         m_Touch_Restart = m_Touch.FindAction("Restart", throwIfNotFound: true);
+        m_Touch_Cancel = m_Touch.FindAction("Cancel", throwIfNotFound: true);
         m_Touch_PrimaryTouchContact = m_Touch.FindAction("PrimaryTouchContact", throwIfNotFound: true);
         m_Touch_PrimaryTouchPosition = m_Touch.FindAction("PrimaryTouchPosition", throwIfNotFound: true);
     }
@@ -210,6 +231,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Touch_Play;
     private readonly InputAction m_Touch_Undo;
     private readonly InputAction m_Touch_Restart;
+    private readonly InputAction m_Touch_Cancel;
     private readonly InputAction m_Touch_PrimaryTouchContact;
     private readonly InputAction m_Touch_PrimaryTouchPosition;
     public struct TouchActions
@@ -219,6 +241,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Play => m_Wrapper.m_Touch_Play;
         public InputAction @Undo => m_Wrapper.m_Touch_Undo;
         public InputAction @Restart => m_Wrapper.m_Touch_Restart;
+        public InputAction @Cancel => m_Wrapper.m_Touch_Cancel;
         public InputAction @PrimaryTouchContact => m_Wrapper.m_Touch_PrimaryTouchContact;
         public InputAction @PrimaryTouchPosition => m_Wrapper.m_Touch_PrimaryTouchPosition;
         public InputActionMap Get() { return m_Wrapper.m_Touch; }
@@ -239,6 +262,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Restart.started += instance.OnRestart;
             @Restart.performed += instance.OnRestart;
             @Restart.canceled += instance.OnRestart;
+            @Cancel.started += instance.OnCancel;
+            @Cancel.performed += instance.OnCancel;
+            @Cancel.canceled += instance.OnCancel;
             @PrimaryTouchContact.started += instance.OnPrimaryTouchContact;
             @PrimaryTouchContact.performed += instance.OnPrimaryTouchContact;
             @PrimaryTouchContact.canceled += instance.OnPrimaryTouchContact;
@@ -258,6 +284,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Restart.started -= instance.OnRestart;
             @Restart.performed -= instance.OnRestart;
             @Restart.canceled -= instance.OnRestart;
+            @Cancel.started -= instance.OnCancel;
+            @Cancel.performed -= instance.OnCancel;
+            @Cancel.canceled -= instance.OnCancel;
             @PrimaryTouchContact.started -= instance.OnPrimaryTouchContact;
             @PrimaryTouchContact.performed -= instance.OnPrimaryTouchContact;
             @PrimaryTouchContact.canceled -= instance.OnPrimaryTouchContact;
@@ -286,6 +315,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnPlay(InputAction.CallbackContext context);
         void OnUndo(InputAction.CallbackContext context);
         void OnRestart(InputAction.CallbackContext context);
+        void OnCancel(InputAction.CallbackContext context);
         void OnPrimaryTouchContact(InputAction.CallbackContext context);
         void OnPrimaryTouchPosition(InputAction.CallbackContext context);
     }

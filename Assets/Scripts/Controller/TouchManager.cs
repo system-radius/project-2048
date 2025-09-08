@@ -12,6 +12,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
     public event Action OnRestart;
     public event Action OnPlay;
     public event Action OnUndo;
+    public event Action OnCancel;
     public event Action<Vector3, float> OnStartTouch;
     public event Action<Vector3, float> OnEndTouch;
 
@@ -30,6 +31,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
         playerControls.Touch.Restart.performed += TriggerRestart;
         playerControls.Touch.Play.performed += TriggerPlay;
         playerControls.Touch.Undo.performed += TriggerUndo;
+        playerControls.Touch.Cancel.performed += TriggerCancel;
         playerControls.Touch.PrimaryTouchContact.started += TriggerTouchStart;
         playerControls.Touch.PrimaryTouchContact.canceled += TriggerTouchEnd;
     }
@@ -39,6 +41,7 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
         playerControls.Touch.Restart.performed -= TriggerRestart;
         playerControls.Touch.Play.performed -= TriggerPlay;
         playerControls.Touch.Undo.performed -= TriggerUndo;
+        playerControls.Touch.Cancel.performed -= TriggerCancel;
         playerControls.Touch.PrimaryTouchContact.started -= TriggerTouchStart;
         playerControls.Touch.PrimaryTouchContact.canceled -= TriggerTouchEnd;
 
@@ -58,6 +61,11 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
     private void TriggerUndo(InputAction.CallbackContext context)
     {
         OnUndo?.Invoke();
+    }
+
+    private void TriggerCancel(InputAction.CallbackContext context)
+    {
+        OnCancel?.Invoke(); 
     }
 
     private IEnumerator HandleFirstTouchNextFrame(float time)

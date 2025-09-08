@@ -33,6 +33,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Cancel",
+                    "type": "Button",
+                    "id": "506b154e-70f3-4bf8-9512-3773d6ea8be6",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "PrimaryTouchContact",
                     "type": "Button",
                     "id": "75acd733-1238-4598-bf4d-d8305e6d9549",
@@ -99,11 +108,22 @@
                 {
                     "name": "",
                     "id": "ad97b8fe-97c6-460a-a63e-c27302ad682f",
-                    "path": "<Keyboard>/escape",
+                    "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "Undo",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8002d087-84a9-4f3e-970f-edccfe10e35e",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Cancel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

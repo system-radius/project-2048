@@ -39,12 +39,14 @@ public class SwipeDetection : MonoBehaviour, ISwipeTrigger
 
     private void TriggerStartTouch(Vector3 position, float time)
     {
+        //Debug.Log("Touch started!");
         startPosition = position;
         startTime = time;
     }
 
     private void TriggerEndTouch(Vector3 position, float time)
     {
+        //Debug.Log("Touch ended!");
         endPosition = position;
         endTime = time;
         DetectSwipe();

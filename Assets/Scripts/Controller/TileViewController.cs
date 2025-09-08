@@ -10,11 +10,7 @@ public class TileViewController : MonoBehaviour, IDimensions, IResetable
 
     private int sizeX, sizeY;
 
-    private Board board;
-
     private GameObject container;
-
-    private bool enableFlag;
 
     /*
     public void SetBoard(Board board)
@@ -46,6 +42,8 @@ public class TileViewController : MonoBehaviour, IDimensions, IResetable
     private void OnDisable()
     {
         //DisableEvents();
+        Destroy(container);
+        container = null;
     }
 
     /*

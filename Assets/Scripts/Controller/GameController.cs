@@ -7,6 +7,9 @@ using System;
 public class GameController : MonoBehaviour
 {
     [SerializeField]
+    private StartController startController;
+
+    [SerializeField]
     private int winCondition = 2048;
 
     [SerializeField]
@@ -87,6 +90,11 @@ public class GameController : MonoBehaviour
         touchManager.OnUndo += gameOverView.HideGameOver;
         OnRestart += gameOverView.HideGameOver;
         board.OnGameOver += gameOverView.ShowGameOver;
+
+        touchManager.OnCancel += startController.DisplayStart;
+        touchManager.OnCancel += SaveState;
+
+        StartCoroutine(StartGameController());
     }
 
     private void OnDisable()
@@ -110,9 +118,12 @@ public class GameController : MonoBehaviour
         touchManager.OnUndo -= gameOverView.HideGameOver;
         OnRestart -= gameOverView.HideGameOver;
         board.OnGameOver -= gameOverView.ShowGameOver;
+
+        touchManager.OnCancel -= startController.DisplayStart;
+        touchManager.OnCancel -= SaveState;
     }
 
-    private IEnumerator Start()
+    private IEnumerator StartGameController()
     {
         yield return null;
         SetDimensions();
