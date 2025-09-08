@@ -1,53 +1,50 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class WinView : MonoBehaviour
 {
     [SerializeField]
-    private GameObject winGameObject;
-    private IGameOverTrigger winTrigger;
-
-    [SerializeField]
     private GameObject winPanel;
 
     [SerializeField]
-    private GameObject scoreRestartButton;
+    private TextMeshProUGUI winPanelText;
 
-    private TouchManager touchManager;
+    Coroutine textMoveFadeCoroutine = null;
+
+    Vector3 textOriginalPosition;
 
     private void Awake()
     {
-        winTrigger = winGameObject.GetComponent<IGameOverTrigger>();
-        if (winTrigger == null)
-        {
-            Debug.LogError("Game Over Trigger not found!");
-        }
-
-        touchManager = TouchManager.Instance;
+        textOriginalPosition = winPanelText.transform.position;
     }
 
-    private void OnEnable()
-    {
-        winTrigger.OnWin += ShowWinPanel;
-        winTrigger.OnGameRestart += HideWinPanel;
-        touchManager.OnPlay += HideWinPanel;
-    }
-
-    private void OnDisable()
-    {
-        winTrigger.OnWin -= ShowWinPanel;
-        winTrigger.OnGameRestart -= HideWinPanel;
-        touchManager.OnPlay -= HideWinPanel;
-    }
-
-    private void ShowWinPanel()
+    public void ShowWinPanel()
     {
         winPanel.SetActive(true);
-        scoreRestartButton.SetActive(false);
+        textMoveFadeCoroutine = StartCoroutine(FadeOutWinText());
     }
 
-    private void HideWinPanel()
+    public void HideWinPanel()
     {
+        if (textMoveFadeCoroutine != null)
+        {
+            StopCoroutine(textMoveFadeCoroutine);
+            textMoveFadeCoroutine = null;
+        }
         winPanel?.SetActive(false);
-        scoreRestartButton?.SetActive(true);
+    }
+
+    private IEnumerator FadeOutWinText()
+    {
+        winPanelText.transform.position = textOriginalPosition;
+        Color color = winPanelText.color;
+        color.a = 1f;
+        winPanelText.color = color;
+        Vector3 target = new Vector3(textOriginalPosition.x, textOriginalPosition.y + 100, textOriginalPosition.z);
+        yield return StartCoroutine(Utils.Instance.LerpPosition(winPanelText.transform, target, 3f, Utils.Instance.FadeTextOut(winPanelText, 5f)));
+        winPanel.SetActive(false);
+        textMoveFadeCoroutine = null;
     }
 }

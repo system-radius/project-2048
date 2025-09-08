@@ -16,8 +16,12 @@ public class ScoreView : MonoBehaviour
     {
         GameObject incrementTextPanel = Instantiate(incrementTextPanelPrefab, transform);
         var textObject = incrementTextPanel.GetComponent<TextMeshProUGUI>();
-        textObject.text = "+" + score;
-        StartCoroutine(MoveFadeOut(textObject, new Vector3(0, 20, 0), 1f));
+        textObject.text = (score > 0 ? "+" : "") + score;
+        //StartCoroutine(MoveFadeOut(textObject, new Vector3(0, 20, 0), 1f));
+        Vector3 position = incrementTextPanel.transform.position;
+        Vector3 target = new Vector3(position.x, position.y + 20, position.z);
+        StartCoroutine(Utils.Instance.LerpPosition(incrementTextPanel.transform, target, 1f));
+        StartCoroutine(Utils.Instance.ChainDestroy(Utils.Instance.FadeTextOut(textObject, 1f), incrementTextPanel));
     }
 
     public void UpdateScore(int score)
@@ -27,33 +31,11 @@ public class ScoreView : MonoBehaviour
         {
             float value = score / 1000f;
             scoreText = value.ToString("F2") + "K";
+        } else if (score > 1_000_000)
+        {
+            float value = score / 1000000;
+            scoreText = value.ToString("F2") + "M";
         }
         scoreTextPanel.text = scoreText;
-    }
-
-    private IEnumerator MoveFadeOut(TextMeshProUGUI textObject, Vector3 target, float duration)
-    {
-        RectTransform rectTransform = textObject.GetComponent<RectTransform>();
-        Vector3 start = rectTransform.anchoredPosition;
-        Color color = textObject.color;
-        float alpha = color.a;
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            float t = elapsed / duration;
-            rectTransform.anchoredPosition = Vector3.Lerp(start, target, t);
-            color.a = Mathf.Lerp(alpha, 0, t);
-            textObject.color = color;
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        rectTransform.anchoredPosition = target;
-        textObject.color = new Color(color.r, color.g, color.b, 0);
-
-        yield return new WaitForSeconds(0.5f);
-
-        Destroy(textObject.gameObject);
     }
 }

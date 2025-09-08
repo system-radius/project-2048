@@ -1,39 +1,22 @@
 using UnityEngine;
 
-public class ScoreDataController : MonoBehaviour
+public class ScoreDataController : MonoBehaviour, IResetable, IPersistable
 {
     [SerializeField]
     private ScoreView currentScoreView;
     [SerializeField]
     private ScoreView bestScoreView;
 
-    [SerializeField]
-    private GameObject scoreControllerObject;
-    private IScoreChangeTrigger scoreChangeTrigger;
-
     private int currentScore;
     private int bestScore;
 
     private void Awake()
     {
-        scoreChangeTrigger = scoreControllerObject.GetComponent<IScoreChangeTrigger>();
         bestScore = PlayerPrefs.GetInt("bestScore", 0);
         bestScoreView.UpdateScore(bestScore);
     }
 
-    private void OnEnable()
-    {
-        scoreChangeTrigger.OnIncrementScore += ShowIncrement;
-        scoreChangeTrigger.OnUpdateScore += UpdateScore;
-    }
-
-    private void OnDisable()
-    {
-        scoreChangeTrigger.OnIncrementScore -= ShowIncrement;
-        scoreChangeTrigger.OnUpdateScore -= UpdateScore;
-    }
-
-    private void UpdateScore(int score)
+    public void UpdateScore(int score)
     {
         currentScore = score;
         currentScoreView.UpdateScore(score);
@@ -45,18 +28,36 @@ public class ScoreDataController : MonoBehaviour
         }
     }
 
-    private void ShowIncrement(int incrementScore)
+    public void ShowIncrement(int incrementScore)
     {
         currentScoreView.ShowIncrement(incrementScore);
+        currentScore += incrementScore;
+        currentScoreView.UpdateScore(currentScore);
+
+        if (currentScore >= bestScore)
+        {
+            bestScore = currentScore;
+            bestScoreView.UpdateScore(currentScore);
+        }
     }
 
-    private void OnApplicationPause(bool pause)
+    public void SaveState()
     {
-        if (pause)
-        {
-            PlayerPrefs.SetInt("bestScore", bestScore);
-            PlayerPrefs.SetInt("currentScore", currentScore);
-            PlayerPrefs.Save();
-        }
+        PlayerPrefs.SetInt("bestScore", bestScore);
+        PlayerPrefs.SetInt("currentScore", currentScore);
+    }
+
+    public void LoadState()
+    {
+        currentScore = PlayerPrefs.GetInt("currentScore", 0);
+        currentScoreView.UpdateScore(currentScore);
+        bestScore = PlayerPrefs.GetInt("bestScore", 0);
+        bestScoreView.UpdateScore(bestScore);
+    }
+
+    public void Restart()
+    {
+        currentScore = 0;
+        currentScoreView.UpdateScore(currentScore);
     }
 }
