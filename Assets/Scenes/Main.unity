@@ -437,6 +437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ba6e3ca596dafa4da58a8af29db5569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  config: {fileID: 11400000, guid: 33296404acc7bab43a98017cec04c697, type: 2}
   worldCamera: {fileID: 519420033}
   blankPrefab: {fileID: 9015680969018271694, guid: bc86d170dcca42448aeb492dbffbcda2, type: 3}
   backgroundPrefab: {fileID: 6133751287160342308, guid: 6022bbce1496cba418b1676236a7555d, type: 3}
@@ -968,6 +969,52 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc7115257dadb3948a86ae3314aa9943, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &594597607
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 594597608}
+  - component: {fileID: 594597609}
+  m_Layer: 0
+  m_Name: BoardController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &594597608
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 594597607}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1627466623}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &594597609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 594597607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b0df8b488426074d88d25f60233846f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swipeDetection: {fileID: 2003006839}
+  config: {fileID: 11400000, guid: 33296404acc7bab43a98017cec04c697, type: 2}
 --- !u!1 &618596180
 GameObject:
   m_ObjectHideFlags: 0
@@ -1233,6 +1280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a311f93e4ea8434896dce7892336d23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  boardController: {fileID: 594597609}
   currentScoreView: {fileID: 7468117978099319040}
   bestScoreView: {fileID: 584093351}
 --- !u!1 &1062954488
@@ -1861,6 +1909,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1388109416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1388109417}
+  - component: {fileID: 1388109418}
+  m_Layer: 0
+  m_Name: GameStateViewController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1388109417
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388109416}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1627466623}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1388109418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1388109416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d81dda34efb23a4d9ba04a585bd07f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardController: {fileID: 594597609}
+  winView: {fileID: 390987709}
+  gameOverView: {fileID: 618596182}
 --- !u!1 &1406957616
 GameObject:
   m_ObjectHideFlags: 0
@@ -2247,14 +2342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 459c93285547a504fb1d6f5e11cbf121, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startController: {fileID: 1062954490}
   winCondition: 2048
-  swipeDetection: {fileID: 2003006839}
-  tileViewController: {fileID: 1671568273}
-  backgroundController: {fileID: 164200340}
-  scoreDataController: {fileID: 1016365429}
-  winView: {fileID: 390987709}
-  gameOverView: {fileID: 618596182}
 --- !u!4 &1627466623
 Transform:
   m_ObjectHideFlags: 0
@@ -2270,6 +2358,8 @@ Transform:
   m_Children:
   - {fileID: 164200339}
   - {fileID: 1671568272}
+  - {fileID: 594597608}
+  - {fileID: 1388109417}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1671568271
@@ -2316,6 +2406,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70987425f7099444faae25050ee37a5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  config: {fileID: 11400000, guid: 33296404acc7bab43a98017cec04c697, type: 2}
+  boardController: {fileID: 594597609}
   tileViewPrefab: {fileID: 5920865916761114224, guid: d816e013f0dc4f44d9930a945f2a4e4c, type: 3}
 --- !u!1 &1711416946
 GameObject:

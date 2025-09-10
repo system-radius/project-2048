@@ -23,6 +23,10 @@ public class WinView : MonoBehaviour
     public void ShowWinPanel()
     {
         winPanel.SetActive(true);
+        if (textMoveFadeCoroutine != null)
+        {
+            StopCoroutine(textMoveFadeCoroutine);
+        }
         textMoveFadeCoroutine = StartCoroutine(FadeOutWinText());
     }
 

@@ -4,13 +4,6 @@ using UnityEngine;
 
 public class StartController : MonoBehaviour
 {
-    /*
-    [SerializeField]
-    private ScoreDataController scoreDataController;
-
-    [SerializeField]
-    private GameController gameController;
-    /**/
 
     [SerializeField]
     private GameObject startPanel;
@@ -19,6 +12,8 @@ public class StartController : MonoBehaviour
     private List<GameObject> activateOnNormal = new List<GameObject>();
 
     private TouchManager touchManager;
+
+    private bool ongoingGame = false;
 
     private void Awake()
     {
@@ -29,24 +24,27 @@ public class StartController : MonoBehaviour
     {
         touchManager.OnPlay += StartNormal;
         touchManager.OnRestart += StartVersus;
+        touchManager.OnCancel += DisplayStart;
     }
 
     private void OnDisable()
     {
         touchManager.OnPlay -= StartNormal;
         touchManager.OnRestart -= StartVersus;
+        touchManager.OnCancel -= DisplayStart;
     }
 
     private void StartNormal()
     {
         //scoreDataController.gameObject.SetActive(true);
         //gameController.gameObject.SetActive(true);
-
+        if (ongoingGame) return;
         StartCoroutine(StartGame(activateOnNormal));
     }
 
     private void StartVersus()
     {
+        if (ongoingGame) return;
         Debug.Log("Starting versus game!");
     }
 
@@ -68,12 +66,14 @@ public class StartController : MonoBehaviour
     {
         yield return StartCoroutine(ActivateObjects(objectsList));
         startPanel.SetActive(false);
+        ongoingGame = true;
     }
 
     private IEnumerator EndGame(List<GameObject> objectsList)
     {
         yield return StartCoroutine(ActivateObjects(objectsList, false));
         startPanel.SetActive(true);
+        ongoingGame = false;
     }
 
 }

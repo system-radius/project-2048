@@ -2,8 +2,11 @@ using System.Collections;
 using UnityEngine;
 
 [DefaultExecutionOrder(2)]
-public class BackgroundController : MonoBehaviour, IDimensions
+public class BackgroundController : MonoBehaviour
 {
+    [SerializeField]
+    private Configuration config;
+
     [SerializeField]
     private CameraScaleController worldCamera;
 
@@ -18,10 +21,10 @@ public class BackgroundController : MonoBehaviour, IDimensions
     private int sizeX = 4;
     private int sizeY = 4;
 
-    public void SetDimensions(float x, float y)
+    private void Awake()
     {
-        sizeX = (int)x;
-        sizeY = (int)y;
+        sizeX = config.size.x;
+        sizeY = config.size.y;
     }
 
     private void OnEnable()

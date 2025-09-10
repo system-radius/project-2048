@@ -1,7 +1,7 @@
 using System.Text;
 using UnityEngine;
 
-public class Board : IInitializable, IResetable, IPersistable
+public class Board
 {
     private int sizeX = 4;
     private int sizeY = 4;
@@ -15,8 +15,6 @@ public class Board : IInitializable, IResetable, IPersistable
     public event System.Action<int, int, int> OnUpdateTile;
     public event System.Action<int, int> OnRemoveTile;
 
-    public event System.Action<int> OnIncrementScore;
-    public event System.Action<int> OnUpdateScore;
     public event System.Action OnGameOver;
 
     private System.Collections.Generic.List<State> states = new System.Collections.Generic.List<State>();
@@ -26,10 +24,7 @@ public class Board : IInitializable, IResetable, IPersistable
     {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
-    }
 
-    public void Initialize()
-    {
         values = new int[sizeX, sizeY];
     }
 
@@ -40,6 +35,8 @@ public class Board : IInitializable, IResetable, IPersistable
         AddTile();
         AddTile(true);
         /**/
+
+        //PrintBoard();
     }
 
     public Vector2Int GetDimensions()
@@ -47,13 +44,17 @@ public class Board : IInitializable, IResetable, IPersistable
         return new Vector2Int(sizeX, sizeY);
     }
 
-    public void DetectTileMovement(AxisData mainAxis, AxisData staticAxis, bool horizontal)
+    public int DetectTileMovement(AxisData mainAxis, AxisData staticAxis, bool horizontal)
     {
         bool hasMovement = MoveTiles(mainAxis, staticAxis, horizontal);
         if (hasMovement)
         {
             AddTile(true);
+            //PrintBoard();
+            return stateMergeScore;
         }
+
+        return 0;
     }
 
     private void AddTile(bool prepareState = false)
@@ -184,10 +185,6 @@ public class Board : IInitializable, IResetable, IPersistable
             }
         }
 
-        if (moveMergeScore > 0)
-        {
-            OnIncrementScore?.Invoke(moveMergeScore);
-        }
         stateMergeScore = moveMergeScore;
         return hasMovement;
     }
@@ -234,9 +231,9 @@ public class Board : IInitializable, IResetable, IPersistable
         return false;
     }
 
-    public void Undo()
+    public int Undo()
     {
-        if (!PopState()) return;
+        if (!PopState()) return 0;
         int[,] grid = state.GetGrid();
         for (int x = 0; x < sizeX; x++)
         {
@@ -260,8 +257,7 @@ public class Board : IInitializable, IResetable, IPersistable
             }
         }
 
-        int stateScore = state.GetScore();
-        if (stateScore > 0) OnIncrementScore?.Invoke(-stateScore);
+        return state.GetScore();
     }
 
     public void SaveState()
@@ -283,16 +279,11 @@ public class Board : IInitializable, IResetable, IPersistable
         }
     }
 
-    public void LoadState()
+    public bool LoadState()
     {
         int sizeX = PlayerPrefs.GetInt("sizeX", -1);
         int sizeY = PlayerPrefs.GetInt("sizeY", -1);
-        if (this.sizeX != sizeX || this.sizeY != sizeY)
-        {
-            OnUpdateScore?.Invoke(0);
-            Restart();
-            return;
-        }
+        if (this.sizeX != sizeX || this.sizeY != sizeY) return false;
 
         ClearBoard();
         for (int x = 0; x < sizeX; x++)
@@ -307,7 +298,9 @@ public class Board : IInitializable, IResetable, IPersistable
             }
         }
 
+        //PrintBoard();
         PrepareState();
+        return true;
     }
 
     private void ClearBoard()

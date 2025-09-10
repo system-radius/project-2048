@@ -1,8 +1,14 @@
 using UnityEngine;
 
 [DefaultExecutionOrder(3)]
-public class TileViewController : MonoBehaviour, IDimensions, IResetable
+public class TileViewController : MonoBehaviour
 {
+    [SerializeField]
+    private Configuration config;
+
+    [SerializeField]
+    private BoardController boardController;
+
     [SerializeField]
     private TileView tileViewPrefab;
 
@@ -12,107 +18,80 @@ public class TileViewController : MonoBehaviour, IDimensions, IResetable
 
     private GameObject container;
 
-    /*
-    public void SetBoard(Board board)
+    private void Awake()
     {
-        container = new GameObject("Tiles_Container");
-
-        if (this.board != null)
-        {
-            foreach (var tile in tileViews)
-            {
-                Destroy(tile.gameObject);
-            }
-        }
-
-        this.board = board;
-        var dim = board.GetDimensions();
-        sizeX = dim.x;
-        sizeY = dim.y;
-
-        tileViews = new TileView[sizeX, sizeY];
-        EnableEvents();
-    }/**/
+        sizeX = config.size.x;
+        sizeY = config.size.y;
+    }
 
     private void OnEnable()
     {
-        //EnableEvents();
+        Restart();
+
+        boardController.OnMergeTile += MergeTiles;
+        boardController.OnMoveTile += MoveTile;
+        boardController.OnAddTile += SpawnTile;
+        boardController.OnUpdateTile += UpdateTile;
+        boardController.OnRemoveTile += RemoveTile;
     }
 
     private void OnDisable()
     {
-        //DisableEvents();
         Destroy(container);
         container = null;
+
+        boardController.OnMergeTile -= MergeTiles;
+        boardController.OnMoveTile -= MoveTile;
+        boardController.OnAddTile -= SpawnTile;
+        boardController.OnUpdateTile -= UpdateTile;
+        boardController.OnRemoveTile -= RemoveTile;
     }
 
-    /*
-    private void EnableEvents()
+    private void Start()
     {
-        if (board == null || enableFlag) return;
-        board.OnAddTile += SpawnTile;
-        board.OnMoveTile += MoveTile;
-        board.OnMergeTile += MergeTiles;
-        enableFlag = true;
-        Debug.Log("Events registration complete!");
     }
 
-    private void DisableEvents()
-    {
-        if (board == null) return;
-        board.OnAddTile -= SpawnTile;
-        board.OnMoveTile -= MoveTile;
-        board.OnMergeTile -= MergeTiles;
-        enableFlag = false;
-    }/**/
-
-    public void SpawnTile(int x, int y, int value)
+    public void SpawnTile(Vector2Int coord, int value)
     {
         TileView tileView = Instantiate(tileViewPrefab, container.transform);
-        tileView.transform.position = new Vector3(x, y, 0);
+        tileView.transform.position = new Vector3(coord.x, coord.y, 0);
         tileView.transform.localScale = Vector3.zero;
         tileView.ChangeValue(value);
 
-        tileViews[x, y] = tileView;
+        tileViews[coord.x, coord.y] = tileView;
     }
 
-    public void MoveTile(int x, int y, int dx, int dy)
+    public void MoveTile(Vector2Int coord, Vector2Int delta)
     {
-        TileView tileView = tileViews[x, y];
+        TileView tileView = tileViews[coord.x, coord.y];
         if (tileView == null) return;
-        tileView.MoveTo(dx, dy);
-        tileViews[x, y] = null;
-        tileViews[dx, dy] = tileView;
+        tileView.MoveTo(delta.x, delta.y);
+        tileViews[coord.x, coord.y] = null;
+        tileViews[delta.x, delta.y] = tileView;
     }
 
-    public void MergeTiles(int x, int y, int dx, int dy, int value)
+    public void MergeTiles(Vector2Int coord, Vector2Int delta, int value)
     {
-        TileView source = tileViews[x, y];
-        TileView target = tileViews[dx, dy];
+        TileView source = tileViews[coord.x, coord.y];
+        TileView target = tileViews[delta.x, delta.y];
 
         if (source == null || target == null) return;
 
-        StartCoroutine(source.Merge(dx, dy));
+        StartCoroutine(source.Merge(delta.x, delta.y));
         target.ChangeValue(value, 1.2f, true);
     }
 
-    public void UpdateTile(int x, int y, int value)
+    public void UpdateTile(Vector2Int coord, int value)
     {
-        TileView tileView = tileViews[x, y];
+        TileView tileView = tileViews[coord.x, coord.y];
         tileView.ChangeValue(value, 0.8f, true);
     }
 
-    public void RemoveTile(int x, int y)
+    public void RemoveTile(Vector2Int coord)
     {
-        TileView tileView = tileViews[x, y];
+        TileView tileView = tileViews[coord.x, coord.y];
         if (tileView == null) return;
         StartCoroutine(tileView.Delete());
-    }
-
-    public void SetDimensions(float x, float y)
-    {
-        sizeX = (int)x;
-        sizeY = (int)y;
     }
 
     public void Restart()
