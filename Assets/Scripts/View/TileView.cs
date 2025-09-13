@@ -12,21 +12,41 @@ public class TileView : MonoBehaviour
 
     private Utils utils;
 
-    private static Color32[] colors =
+    private Color32[][] colors = new Color32[][]
     {
-        HexToColor32("#CBC2B3"), // 0
-        HexToColor32("#EEEBDB"), // 2
-        HexToColor32("#ECE0C8"), // 4
-        HexToColor32("#EFB27E"), // 8
-        HexToColor32("#F39768"), // 16
-        HexToColor32("#F37D63"), // 32
-        HexToColor32("#F46042"), // 64
-        HexToColor32("#EACF76"), // 128
-        HexToColor32("#EDCB67"), // 256
-        HexToColor32("#ECC85A"), // 512
-        HexToColor32("#E7C257"), // 1024
-        HexToColor32("#E8BE4E"), // 2048
-        HexToColor32("#3C3A33"), // 2048+
+        new Color32[] {
+            Utils.HexToColor32("#CBC2B3"), // 0
+            Utils.HexToColor32("#EEEBDB"), // 2
+            Utils.HexToColor32("#ECE0C8"), // 4
+            Utils.HexToColor32("#EFB27E"), // 8
+            Utils.HexToColor32("#F39768"), // 16
+            Utils.HexToColor32("#F37D63"), // 32
+            Utils.HexToColor32("#F46042"), // 64
+            Utils.HexToColor32("#EACF76"), // 128
+            Utils.HexToColor32("#EDCB67"), // 256
+            Utils.HexToColor32("#ECC85A"), // 512
+            Utils.HexToColor32("#E7C257"), // 1024
+            Utils.HexToColor32("#E8BE4E"), // 2048
+            Utils.HexToColor32("#3C3A33") // 2048+
+        },
+        new Color32[] {
+            Utils.HexToColor32("#000000"), // 0
+            Utils.HexToColor32("#FFD3D3"), // 2
+            Utils.HexToColor32("#FF6C6C"), // 4
+            Utils.HexToColor32("#FF0000"), // 8
+            Utils.HexToColor32("#FF0000"), // 16
+            Utils.HexToColor32("#FF0000"), // 32
+            Utils.HexToColor32("#BF0000"), // 64 +
+        },
+        new Color32[] {
+            Utils.HexToColor32("#000000"), // 0
+            Utils.HexToColor32("#D3D3FF"), // 2
+            Utils.HexToColor32("#6C6CFF"), // 4
+            Utils.HexToColor32("#0000FF"), // 8
+            Utils.HexToColor32("#0000FF"), // 16
+            Utils.HexToColor32("#0000FF"), // 32
+            Utils.HexToColor32("#0000BF"), // 64 +
+        }
     };
 
     private static float[] fontSizes =
@@ -34,28 +54,19 @@ public class TileView : MonoBehaviour
         5, 5, 5, 5, 5, 5, 5, 3.5f, 3.5f, 3.5f, 2.5f, 2.5f, 2.5f
     };
 
-    private static Color32 HexToColor32(string hex)
-    {
-        Color color;
-        if (ColorUtility.TryParseHtmlString(hex, out color))
-        {
-            return (Color32)color;
-        }
-
-        return (Color32)Color.magenta;
-    }
-
     private void Awake()
     {
         utils = Utils.Instance;
     }
 
-    public void ChangeValue(int value, float multiplier = 1.2f, bool pulseSize = false)
+    public void ChangeValue(int value, int playerId, float multiplier = 1.2f, bool pulseSize = false)
     {
         int index = Mathf.RoundToInt(Mathf.Log(value) / Mathf.Log(2));
-
-        if (index >= colors.Length) index = colors.Length - 1;
-        spriteRenderer.color = colors[index];
+        int colorIndex = index;
+        Color32[] array = colors[playerId];
+        if (colorIndex >= array.Length) colorIndex = array.Length - 1;
+        //Debug.Log("[" + playerId + "] Index: " + index);
+        spriteRenderer.color = array[colorIndex];
 
         tmpPro.fontSize = fontSizes[index];
         tmpPro.text = value.ToString();

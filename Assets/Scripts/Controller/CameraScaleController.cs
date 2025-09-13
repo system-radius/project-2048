@@ -23,6 +23,13 @@ public class CameraScaleController : MonoBehaviour
     private float halfHeight = 5f;
     private float halfWidth = 5f;
 
+    private Color defaultColor;
+
+    private void Awake()
+    {
+        defaultColor = worldCamera.backgroundColor;
+    }
+
     public void AdjustCameraSize(Transform parentTransform)
     {
         float targetRatio = targetAspectX / targetAspectY;
@@ -51,5 +58,15 @@ public class CameraScaleController : MonoBehaviour
         //halfWidth = worldCamera.aspect * halfHeight;
 
         //Debug.LogError("Center: " + bounds.center + ", min: " + minBounds.ToString() + ", max: " + maxBounds + ", halfHeight: " + halfHeight + ", halfWidth: " + halfWidth);
+    }
+
+    public void ChangeSkyBox(Color color)
+    {
+        worldCamera.backgroundColor = color;
+    }
+
+    public void Reset()
+    {
+        worldCamera.backgroundColor = defaultColor;
     }
 }

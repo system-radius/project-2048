@@ -5,14 +5,18 @@ public class Board
 {
     private int sizeX = 4;
     private int sizeY = 4;
+    private int players = 1;
+    private int tile4Requirement = 75;
+    private int tile4ReqDefault = 75;
 
     private int stateMergeScore;
-    private int[,] values;
+    //private int[,] values;
+    private Tile[,] tiles;
 
-    public event System.Action<int, int, int, int, int> OnMergeTile;
+    public event System.Action<int, int, int, int, int, int> OnMergeTile;
     public event System.Action<int, int, int, int> OnMoveTile;
-    public event System.Action<int, int, int> OnAddTile;
-    public event System.Action<int, int, int> OnUpdateTile;
+    public event System.Action<int, int, int, int> OnAddTile;
+    public event System.Action<int, int, int, int> OnUpdateTile;
     public event System.Action<int, int> OnRemoveTile;
 
     public event System.Action OnGameOver;
@@ -20,20 +24,61 @@ public class Board
     private System.Collections.Generic.List<State> states = new System.Collections.Generic.List<State>();
     private State state;
 
-    public Board(int sizeX, int sizeY)
+    private Vector2Int[][] startingPoints;
+
+    public Board(int sizeX, int sizeY, int players)
     {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
 
-        values = new int[sizeX, sizeY];
+        this.players = players;
+
+        tiles = new Tile[sizeX, sizeY];
+
+        if (players > 0)
+        {
+            startingPoints = new Vector2Int[players][];
+            startingPoints[0] = new Vector2Int[]
+            {
+                new Vector2Int(0, 0),
+                new Vector2Int(sizeX - 1, sizeY - 1),
+            };
+
+            startingPoints[1] = new Vector2Int[]
+            {
+                new Vector2Int(0, sizeY - 1),
+                new Vector2Int(sizeX - 1, 0),
+            };
+        }
+    }
+
+    public Board(int sizeX, int sizeY) : this(sizeX, sizeY, 0)
+    {
     }
 
     public void Restart()
     {
         ClearBoard();
 
-        AddTile();
-        AddTile(true);
+        if (players <= 1)
+        {
+            AddTile(0);
+            AddTile(0, true);
+        }
+        else
+        {
+            tile4ReqDefault = tile4Requirement = 100;
+            for (int i = 0; i < players; i++)
+            {
+                Vector2Int[] startingPoint = startingPoints[i];
+                foreach (var coord in startingPoint)
+                {
+                    SpawnTile(coord.x, coord.y, 2, i + 1);
+                }
+            }
+
+            PrepareState();
+        }
         /**/
 
         //PrintBoard();
@@ -44,20 +89,24 @@ public class Board
         return new Vector2Int(sizeX, sizeY);
     }
 
-    public int DetectTileMovement(AxisData mainAxis, AxisData staticAxis, bool horizontal)
+    public int DetectTileMovement(AxisData mainAxis, AxisData staticAxis, bool horizontal, int playerId = 0, int nextPlayerId = 0)
     {
-        bool hasMovement = MoveTiles(mainAxis, staticAxis, horizontal);
+        bool hasMovement = MoveTiles(mainAxis, staticAxis, horizontal, playerId);
         if (hasMovement)
         {
-            AddTile(true);
+            if (stateMergeScore > 0 && players > 0)
+            {
+                //AddTile(nextPlayerId);
+            }
+            AddTile(nextPlayerId, true);
             //PrintBoard();
             return stateMergeScore;
         }
 
-        return 0;
+        return -1;
     }
 
-    private void AddTile(bool prepareState = false)
+    private void AddTile(int playerId, bool prepareState = false)
     {
         bool tileAdded = false;
         do
@@ -70,9 +119,9 @@ public class Board
                 break;
             }
 
-            if (values[x, y] != 0) continue;
+            if (tiles[x, y] != null) continue;
 
-            SpawnTile(x, y, (Random.Range(0, 100) > 75) ? 4 : 2);
+            SpawnTile(x, y, (Random.Range(0, 100) > tile4Requirement) ? 4 : 2, playerId);
             //SpawnTile(x, y, (Random.Range(0, 100) > 75) ? 1024 : 512);
             //SpawnTile(x, y, 2);
 
@@ -84,15 +133,16 @@ public class Board
             PrepareState();
         }
 
-        if (!HasNullTile() && !CheckMergePossibilities())
+        if (!HasNullTile() && !CheckMergePossibilities(playerId))
         {
+            Debug.Log("[Board] Triggered game over!");
             OnGameOver?.Invoke();
         }
     }
 
-    private void SpawnTile(int x, int y, int value) {
-        values[x, y] = value;
-        OnAddTile?.Invoke(x, y, value);
+    private void SpawnTile(int x, int y, int value, int playerId = 0) {
+        tiles[x, y] = new Tile(value, playerId);
+        OnAddTile?.Invoke(x, y, value, playerId);
     }
 
     private bool HasNullTile()
@@ -102,7 +152,7 @@ public class Board
             for (int y = 0; y < sizeY; y++)
             {
                 //if (tiles[x, y] == null) return true;
-                if (values[x, y] == 0) return true;
+                if (tiles[x, y] == null) return true;
             }
         }
 
@@ -116,7 +166,7 @@ public class Board
             PushState();
         }
         state = new State(sizeX, sizeY);
-        state.Ready(values);
+        state.Ready(ConvertBoard());
     }
 
     private void PushState()
@@ -134,7 +184,7 @@ public class Board
         return true;
     }
 
-    private bool MoveTiles(AxisData mainAxis, AxisData staticAxis, bool horizontal)
+    private bool MoveTiles(AxisData mainAxis, AxisData staticAxis, bool horizontal, int playerId)
     {
         int moveMergeScore = 0;
         bool hasMovement = false;
@@ -146,26 +196,26 @@ public class Board
                 int x = horizontal ? j : i;
                 int y = horizontal ? i : j;
 
-                var tile = values[x, y];
-                lookForMerge = tile > 0;
+                var tile = tiles[x, y];
+                lookForMerge = tile != null;
 
                 for (int k = j + mainAxis.update; k != mainAxis.end; k += mainAxis.update)
                 {
                     int nextX = horizontal ? k : i;
                     int nextY = horizontal ? i : k;
 
-                    var nextTile = values[nextX, nextY];
-                    if (nextTile != 0)
+                    var nextTile = tiles[nextX, nextY];
+                    if (nextTile != null)
                     {
                         if (lookForMerge)
                         {
-                            int mergeScore = nextTile == tile ? nextTile + tile : 0;
+                            int mergeScore = nextTile.Merge(tile, playerId);
                             if (mergeScore != 0)
                             {
                                 moveMergeScore += mergeScore;
-                                values[x, y] = mergeScore;
-                                OnMergeTile?.Invoke(nextX, nextY, x, y, mergeScore);
-                                values[nextX, nextY] = 0;
+                                tiles[x, y] = nextTile;
+                                OnMergeTile?.Invoke(nextX, nextY, x, y, mergeScore, playerId);
+                                tiles[nextX, nextY] = null;
                                 hasMovement = true;
                             }
                             // Break regardless of the merge succeeding or not, since this means that there is a block
@@ -176,7 +226,7 @@ public class Board
                         {
                             MoveTo(nextX, nextY, x, y, nextTile);
                             // Reload the tile value.
-                            tile = values[x, y];
+                            tile = tiles[x, y];
                             lookForMerge = true;
                         }
                         hasMovement = true;
@@ -189,28 +239,28 @@ public class Board
         return hasMovement;
     }
 
-    private void MoveTo(int x, int y, int dx, int dy, int tile)
+    private void MoveTo(int x, int y, int dx, int dy, Tile tile)
     {
-        values[x, y] = 0;
-        values[dx, dy] = tile;
+        tiles[x, y] = null;
+        tiles[dx, dy] = tile;
         OnMoveTile?.Invoke(x, y, dx, dy);
     }
 
-    private bool CheckMergePossibilities()
+    private bool CheckMergePossibilities(int playerId = 0)
     {
         for (int x = 0; x < sizeX; x++)
         {
             for (int y = 0; y < sizeY; y++)
             {
-                int tile = values[x, y];
-                if (tile == 0 || CheckTileMergePossibility(x, y, tile)) return true;
+                Tile tile = tiles[x, y];
+                if (tile == null || CheckTileMergePossibility(x, y, tile, playerId)) return true;
             }
         }
 
         return false;
     }
 
-    private bool CheckTileMergePossibility(int tileX, int tileY, int value)
+    private bool CheckTileMergePossibility(int tileX, int tileY, Tile tile, int playerId = 0)
     {
         for (int x = -1; x <= 1; x++)
         {
@@ -222,9 +272,11 @@ public class Board
                 if (checkY < 0 || checkY >= sizeY) continue;
                 if (Mathf.Abs(x) == Mathf.Abs(y)) continue;
 
-                var checkTile = values[checkX, checkY];
-                if (checkTile == 0) continue;
-                if (value == checkTile) return true;
+                var checkTile = tiles[checkX, checkY];
+                if (checkTile == null) continue;
+                bool mergeStatus = tile.CanMerge(checkTile);
+                Debug.Log("[" + tileX + "," + tileY + "] -> [" + checkX + ", " + checkY + "]: " + mergeStatus);
+                if (tile.CanMerge(checkTile, playerId)) return true;
             }
         }
 
@@ -233,26 +285,27 @@ public class Board
 
     public int Undo()
     {
-        if (!PopState()) return 0;
-        int[,] grid = state.GetGrid();
+        if (!PopState()) return -1;
+        TileData[,] grid = state.GetGrid();
         for (int x = 0; x < sizeX; x++)
         {
             for (int y = 0; y < sizeY; y++)
             {
-                int tile = values[x, y];
-                if (tile == 0 && grid[x, y] == 0) continue;
+                Tile tile = tiles[x, y];
+                if (tile == null && grid[x, y].value == 0) continue;
 
-                if (grid[x, y] == 0 && tile != 0)
+                if (grid[x, y].value == 0 && tile != null)
                 {
-                    values[x, y] = 0;
+                    tiles[x, y] = null;
                     OnRemoveTile?.Invoke(x, y);
-                } else if (grid[x, y] > 0 && tile == 0)
+                } else if (grid[x, y].value > 0 && tile == null)
                 {
-                    SpawnTile(x, y, grid[x, y]);
-                } else if (grid[x, y] != tile)
+                    SpawnTile(x, y, grid[x, y].value, grid[x, y].playerId);
+                } else if (grid[x, y].value != tile.value)
                 {
-                    values[x, y] = grid[x, y];
-                    OnUpdateTile?.Invoke(x, y, values[x, y]);
+                    tiles[x, y].value = grid[x, y].value;
+                    tiles[x, y].playerId = grid[x, y].playerId;
+                    OnUpdateTile?.Invoke(x, y, tiles[x, y].value, tiles[x, y].playerId);
                 }
             }
         }
@@ -260,18 +313,25 @@ public class Board
         return state.GetScore();
     }
 
-    public void SaveState()
+    public void SaveState(string key)
     {
-        PlayerPrefs.SetInt("sizeX", sizeX);
-        PlayerPrefs.SetInt("sizeY", sizeY);
+        PlayerPrefs.SetInt(key + "sizeX", sizeX);
+        PlayerPrefs.SetInt(key + "sizeY", sizeY);
 
         StringBuilder sb = new StringBuilder();
         for (int x = 0; x < sizeX; x++)
         {
             for (int y = 0; y < sizeY; y++)
             {
-                int value = values[x, y];
-                PlayerPrefs.SetInt(x + "_" + y, value);
+                int value = 0;
+                int player = -1;
+                if (tiles[x, y] != null)
+                {
+                    value = tiles[x, y].value;
+                    player = tiles[x, y].playerId;
+                }
+                PlayerPrefs.SetInt(key + x + "_" + y, value);
+                PlayerPrefs.SetInt(key + x + "_" + y + "@p", player);
                 sb.Append("[");
                 sb.Append(value);
                 sb.Append("] ");
@@ -279,10 +339,10 @@ public class Board
         }
     }
 
-    public bool LoadState()
+    public bool LoadState(string key)
     {
-        int sizeX = PlayerPrefs.GetInt("sizeX", -1);
-        int sizeY = PlayerPrefs.GetInt("sizeY", -1);
+        int sizeX = PlayerPrefs.GetInt(key + "sizeX", -1);
+        int sizeY = PlayerPrefs.GetInt(key + "sizeY", -1);
         if (this.sizeX != sizeX || this.sizeY != sizeY) return false;
 
         ClearBoard();
@@ -290,10 +350,11 @@ public class Board
         {
             for (int y = 0; y < sizeY; y++)
             {
-                int value = PlayerPrefs.GetInt((x + "_" + y), 0);
+                int value = PlayerPrefs.GetInt(key + x + "_" + y, 0);
+                int player = PlayerPrefs.GetInt(key + x + "_" + y + "@p", -12);
                 if (value > 0)
                 {
-                    SpawnTile(x, y, value);
+                    SpawnTile(x, y, value, player);
                 }
             }
         }
@@ -311,13 +372,32 @@ public class Board
         {
             for (int j = 0; j < sizeY; j++)
             {
-                if (values[i, j] != 0)
+                if (tiles[i, j] != null)
                 {
                     OnRemoveTile?.Invoke(i, j);
                 }
-                values[i, j] = 0;
+                tiles[i, j] = null;
             }
         }
+    }
+
+    private TileData[,] ConvertBoard()
+    {
+        TileData[,] converted = new TileData[sizeX, sizeY];
+        for (int i = 0; i < sizeX; i++)
+        {
+            for (int j = 0;j < sizeY; j++)
+            {
+                converted[i, j] = new TileData(0, 0);
+                var tile = tiles[i, j];
+                if (tile != null)
+                {
+                    converted[i, j] = new TileData(tile.value, tile.playerId);
+                }
+            }
+        }
+
+        return converted;
     }
 
     private void PrintBoard()
@@ -328,11 +408,49 @@ public class Board
             for (int x = 0; x < sizeX; x++)
             {
                 sb.Append("[");
-                sb.Append(values[x, y]);
+                sb.Append(tiles[x, y]);
                 sb.Append("] ");
             }
             sb.Append("\n");
         }
         Debug.Log(sb.ToString());
+    }
+
+    private class Tile
+    {
+        public int value;
+        public int playerId;
+
+        public Tile(int value)
+        {
+            this.value = value;
+        }
+
+        public Tile(int value, int playerId)
+        {
+            this.value = value;
+            this.playerId = playerId;
+        }
+
+        private int IncreaseValue()
+        {
+            value *= 2;
+            return value;
+        }
+
+        public int Merge(Tile that, int playerId = 0)
+        {
+            if (!CanMerge(that, playerId))
+            {
+                return 0;
+            }
+
+            return IncreaseValue();
+        }
+
+        public bool CanMerge(Tile that, int playerId = 0)
+        {
+            return this.value == that.value && this.playerId == playerId;
+        }
     }
 }

@@ -82,4 +82,15 @@ public class Utils : Singleton<Utils>
         yield return StartCoroutine(coroutine);
         Destroy(gameObject);
     }
+
+    public static Color32 HexToColor32(string hex)
+    {
+        Color color;
+        if (ColorUtility.TryParseHtmlString(hex, out color))
+        {
+            return (Color32)color;
+        }
+
+        return (Color32)Color.magenta;
+    }
 }

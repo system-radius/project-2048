@@ -5,10 +5,10 @@ using UnityEngine;
 public class BackgroundController : MonoBehaviour
 {
     [SerializeField]
-    private Configuration config;
+    protected Configuration config;
 
     [SerializeField]
-    private CameraScaleController worldCamera;
+    protected CameraScaleController worldCamera;
 
     [SerializeField]
     private GameObject blankPrefab;
@@ -21,18 +21,14 @@ public class BackgroundController : MonoBehaviour
     private int sizeX = 4;
     private int sizeY = 4;
 
-    private void Awake()
+    protected virtual void OnEnable()
     {
         sizeX = config.size.x;
         sizeY = config.size.y;
-    }
-
-    private void OnEnable()
-    {
         StartCoroutine(StartBackground());
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         Destroy(container);
         container = null;

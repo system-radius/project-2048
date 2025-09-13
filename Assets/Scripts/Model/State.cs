@@ -1,15 +1,18 @@
 public class State
 {
-    private int[,] grid;
+    private TileData[,] grid;
     private int score;
 
     private int sizeX, sizeY;
 
-    public State(int sizeX, int sizeY)
+    private int playerMove;
+
+    public State(int sizeX, int sizeY, int player = 0)
     {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
-        grid = new int[sizeX, sizeY];
+        grid = new TileData[this.sizeX, this.sizeY];
+        playerMove = player;
     }
 
     public void SetScore(int score)
@@ -17,18 +20,21 @@ public class State
         this.score = score;
     }
 
-    public void Ready(int[,] tiles)
+    public void Ready(TileData[,] tiles)
     {
+        /*
         for (int x = 0; x < sizeX; x++)
         {
             for (int y = 0; y < sizeY; y++)
             {
                 grid[x, y] = tiles[x, y];
             }
-        }
+        }/**/
+
+        grid = tiles;
     }
 
-    public int[,] GetGrid()
+    public TileData[,] GetGrid()
     {
         return grid;
     }
@@ -36,5 +42,10 @@ public class State
     public int GetScore()
     {
         return score;
+    }
+
+    public int GetPlayer()
+    {
+        return playerMove;
     }
 }

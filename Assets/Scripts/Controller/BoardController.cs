@@ -5,25 +5,25 @@ using UnityEngine;
 public class BoardController : MonoBehaviour
 {
     [SerializeField]
-    private SwipeDetection swipeDetection;
+    protected SwipeDetection swipeDetection;
 
     [SerializeField]
-    private Configuration config;
+    protected Configuration config;
 
-    private TouchManager touchManager;
+    protected TouchManager touchManager;
 
-    private Board board;
+    protected Board board;
 
-    private AxisData mainAxis;
-    private AxisData staticAxis;
+    protected AxisData mainAxis;
+    protected AxisData staticAxis;
 
-    private int sizeX;
-    private int sizeY;
+    protected int sizeX;
+    protected int sizeY;
 
-    public event Action<Vector2Int, Vector2Int, int> OnMergeTile;
+    public event Action<Vector2Int, Vector2Int, int, int> OnMergeTile;
     public event Action<Vector2Int, Vector2Int> OnMoveTile;
-    public event Action<Vector2Int, int> OnAddTile;
-    public event Action<Vector2Int, int> OnUpdateTile;
+    public event Action<Vector2Int, int, int> OnAddTile;
+    public event Action<Vector2Int, int, int> OnUpdateTile;
     public event Action<Vector2Int> OnRemoveTile;
 
     public event Action<int> OnIncrementScore;
@@ -31,10 +31,12 @@ public class BoardController : MonoBehaviour
     public event Action OnGameOver;
     public event Action OnWin;
 
-    private bool winState = false;
-    private bool gameOver = false;
+    protected bool winState = false;
+    protected bool gameOver = false;
 
-    private void Awake()
+    protected string saveKey = "normal_";
+
+    protected virtual void Awake()
     {
         touchManager = TouchManager.Instance;
         mainAxis = new AxisData();
@@ -43,16 +45,16 @@ public class BoardController : MonoBehaviour
         staticAxis.update = 1;
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         sizeX = config.size.x;
         sizeY = config.size.y;
 
-        board = new Board(sizeX, sizeY);
+        board = new Board(sizeX, sizeY, config.players);
         touchManager.OnUndo += Undo;
         touchManager.OnRestart += Restart;
         touchManager.OnCancel += SaveState;
-        swipeDetection.OnSwipe += ProcessMovement;
+        swipeDetection.OnSwipe += PrepareMovementData;
 
         board.OnMergeTile += MergeTile;
         board.OnMoveTile += MoveTile;
@@ -65,12 +67,12 @@ public class BoardController : MonoBehaviour
         StartCoroutine(StartBoard());
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         touchManager.OnUndo -= Undo;
         touchManager.OnRestart -= Restart;
         touchManager.OnCancel -= SaveState;
-        swipeDetection.OnSwipe -= ProcessMovement;
+        swipeDetection.OnSwipe -= PrepareMovementData;
 
         board.OnMergeTile -= MergeTile;
         board.OnMoveTile -= MoveTile;
@@ -81,7 +83,7 @@ public class BoardController : MonoBehaviour
         board.OnGameOver -= TriggerGameOver;
     }
 
-    private void OnApplicationPause(bool pause)
+    protected void OnApplicationPause(bool pause)
     {
         if (pause)
         {
@@ -89,17 +91,22 @@ public class BoardController : MonoBehaviour
         }
     }
 
-    private IEnumerator StartBoard()
+    protected virtual IEnumerator StartBoard()
     {
         yield return null;
         LoadState();
     }
 
-    private void ProcessMovement(Vector2Int direction)
+    protected virtual void PrepareMovementData(Vector2Int direction)
+    {
+        ProcessMovement(direction, 0, 0);
+    }
+
+    protected int ProcessMovement(Vector2Int direction, int playerId, int nextPlayerId)
     {
 
         // Do the actual movement for the tiles according to the direction.
-        int moveScore = 0;
+        int moveScore = -1;
         if (direction.x != 0)
         {
             if (direction.x < 0)
@@ -114,7 +121,7 @@ public class BoardController : MonoBehaviour
             }
             mainAxis.update = direction.x;
             staticAxis.end = sizeY;
-            moveScore = board.DetectTileMovement(mainAxis, staticAxis, true);
+            moveScore = board.DetectTileMovement(mainAxis, staticAxis, true, playerId, nextPlayerId);
         }
 
         else if (direction.y != 0)
@@ -131,7 +138,7 @@ public class BoardController : MonoBehaviour
             }
             mainAxis.update = direction.y;
             staticAxis.end = sizeX;
-            moveScore = board.DetectTileMovement(mainAxis, staticAxis, false);
+            moveScore = board.DetectTileMovement(mainAxis, staticAxis, false, playerId, nextPlayerId);
         }
 
         if (moveScore > 0)
@@ -143,47 +150,49 @@ public class BoardController : MonoBehaviour
                 winState = true;
             }
         }
+
+        return moveScore;
     }
 
-    private void MergeTile(int x, int y, int dx, int dy, int value)
+    protected void MergeTile(int x, int y, int dx, int dy, int value, int playerId)
     {
-        OnMergeTile?.Invoke(new Vector2Int(x, y), new Vector2Int(dx, dy), value);
+        OnMergeTile?.Invoke(new Vector2Int(x, y), new Vector2Int(dx, dy), value, playerId);
     }
 
-    private void MoveTile(int x, int y, int dx, int dy)
+    protected void MoveTile(int x, int y, int dx, int dy)
     {
         OnMoveTile?.Invoke(new Vector2Int(x, y), new Vector2Int(dx, dy));
     }
 
-    private void AddTile(int x, int y, int value)
+    protected void AddTile(int x, int y, int value, int playerId)
     {
-        OnAddTile?.Invoke(new Vector2Int(x, y), value);
+        OnAddTile?.Invoke(new Vector2Int(x, y), value, playerId);
     }
 
-    private void UpdateTile(int x, int y, int value)
+    protected void UpdateTile(int x, int y, int value, int playerId)
     {
-        OnUpdateTile?.Invoke(new Vector2Int(x, y), value);
+        OnUpdateTile?.Invoke(new Vector2Int(x, y), value, playerId);
     }
 
-    private void RemoveTile(int x, int y)
+    protected void RemoveTile(int x, int y)
     {
         OnRemoveTile?.Invoke(new Vector2Int(x, y));
     }
 
-    private void Restart()
+    protected virtual void Restart()
     {
         OnUpdateScore?.Invoke(0);
         board.Restart();
         winState = false;
     }
 
-    private void TriggerGameOver()
+    protected void TriggerGameOver()
     {
         OnGameOver?.Invoke();
         gameOver = true;
     }
 
-    private void SaveState()
+    protected void SaveState()
     {
         if (gameOver)
         {
@@ -193,16 +202,16 @@ public class BoardController : MonoBehaviour
             winState = false;
         } else
         {
-            board.SaveState();
+            board.SaveState(saveKey);
         }
         
         PlayerPrefs.SetInt("winState", winState ? 1 : 0);
         PlayerPrefs.Save();
     }
 
-    private void LoadState()
+    protected void LoadState()
     {
-        if (!board.LoadState())
+        if (!board.LoadState(saveKey))
         {
             Restart();
             return;
@@ -211,7 +220,7 @@ public class BoardController : MonoBehaviour
         winState = PlayerPrefs.GetInt("winState", 0) == 1;
     }
 
-    private void Undo()
+    protected virtual void Undo()
     {
         int score = board.Undo();
         if (score > 0)

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ScoreDataController : MonoBehaviour
 {
-    private TouchManager touchManager;
+    protected TouchManager touchManager;
 
     [SerializeField]
     private BoardController boardController;
@@ -15,7 +15,7 @@ public class ScoreDataController : MonoBehaviour
     private int currentScore;
     private int bestScore;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         bestScore = PlayerPrefs.GetInt("bestScore", 0);
         bestScoreView.UpdateScore(bestScore);
@@ -23,7 +23,7 @@ public class ScoreDataController : MonoBehaviour
         touchManager = TouchManager.Instance;
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         touchManager.OnRestart += Restart;
         touchManager.OnCancel += SaveState;
@@ -32,7 +32,7 @@ public class ScoreDataController : MonoBehaviour
         boardController.OnUpdateScore += UpdateScore;
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         touchManager.OnRestart -= Restart;
         touchManager.OnCancel -= SaveState;
@@ -41,7 +41,7 @@ public class ScoreDataController : MonoBehaviour
         boardController.OnUpdateScore -= UpdateScore;
     }
 
-    private void OnApplicationPause(bool pause)
+    protected virtual void OnApplicationPause(bool pause)
     {
         if (pause)
         {
@@ -49,7 +49,7 @@ public class ScoreDataController : MonoBehaviour
         }
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         LoadState();
     }
@@ -94,7 +94,7 @@ public class ScoreDataController : MonoBehaviour
         bestScoreView.UpdateScore(bestScore);
     }
 
-    public void Restart()
+    protected virtual void Restart()
     {
         currentScore = 0;
         currentScoreView.UpdateScore(currentScore);

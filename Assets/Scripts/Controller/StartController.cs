@@ -11,6 +11,11 @@ public class StartController : MonoBehaviour
     [SerializeField]
     private List<GameObject> activateOnNormal = new List<GameObject>();
 
+    [SerializeField]
+    private List<GameObject> activateOnVersus = new List<GameObject>();
+
+    private List<GameObject> allObjects = new List<GameObject>();
+
     private TouchManager touchManager;
 
     private bool ongoingGame = false;
@@ -18,6 +23,8 @@ public class StartController : MonoBehaviour
     private void Awake()
     {
         touchManager = TouchManager.Instance;
+        allObjects.AddRange(activateOnNormal);
+        allObjects.AddRange(activateOnVersus);
     }
 
     private void OnEnable()
@@ -45,12 +52,13 @@ public class StartController : MonoBehaviour
     private void StartVersus()
     {
         if (ongoingGame) return;
-        Debug.Log("Starting versus game!");
+        StartCoroutine(StartGame(activateOnVersus));
     }
 
     public void DisplayStart()
     {
-        StartCoroutine(EndGame(activateOnNormal));
+
+        StartCoroutine(EndGame(allObjects));
     }
 
     private IEnumerator ActivateObjects(List<GameObject> objectsList, bool status = true)

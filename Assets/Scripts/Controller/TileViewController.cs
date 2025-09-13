@@ -18,14 +18,10 @@ public class TileViewController : MonoBehaviour
 
     private GameObject container;
 
-    private void Awake()
+    private void OnEnable()
     {
         sizeX = config.size.x;
         sizeY = config.size.y;
-    }
-
-    private void OnEnable()
-    {
         Restart();
 
         boardController.OnMergeTile += MergeTiles;
@@ -51,12 +47,12 @@ public class TileViewController : MonoBehaviour
     {
     }
 
-    public void SpawnTile(Vector2Int coord, int value)
+    public void SpawnTile(Vector2Int coord, int value, int playerId)
     {
         TileView tileView = Instantiate(tileViewPrefab, container.transform);
         tileView.transform.position = new Vector3(coord.x, coord.y, 0);
         tileView.transform.localScale = Vector3.zero;
-        tileView.ChangeValue(value);
+        tileView.ChangeValue(value, playerId);
 
         tileViews[coord.x, coord.y] = tileView;
     }
@@ -70,7 +66,7 @@ public class TileViewController : MonoBehaviour
         tileViews[delta.x, delta.y] = tileView;
     }
 
-    public void MergeTiles(Vector2Int coord, Vector2Int delta, int value)
+    public void MergeTiles(Vector2Int coord, Vector2Int delta, int value, int playerId)
     {
         TileView source = tileViews[coord.x, coord.y];
         TileView target = tileViews[delta.x, delta.y];
@@ -78,13 +74,13 @@ public class TileViewController : MonoBehaviour
         if (source == null || target == null) return;
 
         StartCoroutine(source.Merge(delta.x, delta.y));
-        target.ChangeValue(value, 1.2f, true);
+        target.ChangeValue(value, playerId, 1.2f, true);
     }
 
-    public void UpdateTile(Vector2Int coord, int value)
+    public void UpdateTile(Vector2Int coord, int value, int playerId)
     {
         TileView tileView = tileViews[coord.x, coord.y];
-        tileView.ChangeValue(value, 0.8f, true);
+        tileView.ChangeValue(value, playerId, 0.8f, true);
     }
 
     public void RemoveTile(Vector2Int coord)
