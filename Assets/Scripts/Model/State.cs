@@ -1,11 +1,11 @@
 public class State
 {
-    private TileData[,] grid;
-    private int score;
+    protected TileData[,] grid;
+    protected int score;
 
-    private int sizeX, sizeY;
+    protected int sizeX, sizeY;
 
-    private int playerMove;
+    protected int playerMove;
 
     public State(int sizeX, int sizeY, int player = 0)
     {

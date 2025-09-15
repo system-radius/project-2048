@@ -275,7 +275,7 @@ public class Board
                 var checkTile = tiles[checkX, checkY];
                 if (checkTile == null) continue;
                 bool mergeStatus = tile.CanMerge(checkTile);
-                Debug.Log("[" + tileX + "," + tileY + "] -> [" + checkX + ", " + checkY + "]: " + mergeStatus);
+                //Debug.Log("[" + tileX + "," + tileY + "] -> [" + checkX + ", " + checkY + "]: " + mergeStatus);
                 if (tile.CanMerge(checkTile, playerId)) return true;
             }
         }
@@ -400,20 +400,11 @@ public class Board
         return converted;
     }
 
-    private void PrintBoard()
+    public State GetState()
     {
-        StringBuilder sb = new StringBuilder();
-        for (int y = sizeY - 1; y >= 0; y--)
-        {
-            for (int x = 0; x < sizeX; x++)
-            {
-                sb.Append("[");
-                sb.Append(tiles[x, y]);
-                sb.Append("] ");
-            }
-            sb.Append("\n");
-        }
-        Debug.Log(sb.ToString());
+        State currentState = new State(sizeX, sizeY, players);
+        currentState.Ready(ConvertBoard());
+        return currentState;
     }
 
     private class Tile

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Config", menuName = "Settings/Config")]
@@ -8,4 +9,6 @@ public class Configuration : ScriptableObject
     public int winCondition;
 
     public int players;
+
+    public List<Level> playerLevels = new();
 }

@@ -186,7 +186,7 @@ public class BoardController : MonoBehaviour
         winState = false;
     }
 
-    protected void TriggerGameOver()
+    protected virtual void TriggerGameOver()
     {
         OnGameOver?.Invoke();
         gameOver = true;

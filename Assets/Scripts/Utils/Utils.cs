@@ -1,7 +1,8 @@
 using System;
 using System.Collections;
-using UnityEngine;
+using System.Text;
 using TMPro;
+using UnityEngine;
 
 [DefaultExecutionOrder(-10)]
 public class Utils : Singleton<Utils>
@@ -92,5 +93,21 @@ public class Utils : Singleton<Utils>
         }
 
         return (Color32)Color.magenta;
+    }
+
+    public static void PrintBoard(TileData[,] tiles, int sizeX, int sizeY)
+    {
+        StringBuilder sb = new StringBuilder("\n");
+        for (int y = sizeY - 1; y >= 0; y--)
+        {
+            for (int x = 0; x < sizeX; x++)
+            {
+                sb.Append("[");
+                sb.Append(tiles[x, y].value);
+                sb.Append("] ");
+            }
+            sb.Append("\n");
+        }
+        Debug.Log(sb.ToString());
     }
 }
