@@ -6,6 +6,15 @@
             "id": "0ce02543-72b2-4b41-9b91-aef945738c47",
             "actions": [
                 {
+                    "name": "Auto",
+                    "type": "Button",
+                    "id": "3fce88a7-0bd4-4e55-9c4e-ae2967bc6af5",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Play",
                     "type": "Button",
                     "id": "af5a5502-7838-474b-bc78-949393af402b",
@@ -124,6 +133,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Cancel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4eee2e87-a8ad-41c1-acac-0841d3ce7425",
+                    "path": "<Keyboard>/f12",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Auto",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

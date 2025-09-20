@@ -21,10 +21,10 @@ public class VersusSettingCompiler : ButtonTrigger
 
     public void CompileSettings()
     {
-        config.playerLevels.Clear();
+        config.playerTypes.Clear();
         foreach (var controller in levelControllers)
         {
-            config.playerLevels.Add(controller.GetLevel());
+            config.playerTypes.Add(controller.GetPlayerType());
         }
     }
 }

@@ -10,6 +10,12 @@ public class BoardController : MonoBehaviour
     [SerializeField]
     protected Configuration config;
 
+    [SerializeField]
+    protected ButtonTrigger settingsTrigger;
+
+    [SerializeField]
+    protected ButtonTrigger settingsCancel;
+
     protected TouchManager touchManager;
 
     protected Board board;
@@ -33,6 +39,8 @@ public class BoardController : MonoBehaviour
 
     protected bool winState = false;
     protected bool gameOver = false;
+
+    protected bool settingsActive = false;
 
     protected string saveKey = "normal_";
 
@@ -62,7 +70,13 @@ public class BoardController : MonoBehaviour
         board.OnUpdateTile += UpdateTile;
         board.OnRemoveTile += RemoveTile;
 
+        board.OnMerge += TriggerMerge;
+        board.OnMove += TriggerMove;
+
         board.OnGameOver += TriggerGameOver;
+
+        settingsTrigger.OnButtonPress += TriggerSettings;
+        settingsCancel.OnButtonPress += CancelSettings;
 
         StartCoroutine(StartBoard());
     }
@@ -80,7 +94,13 @@ public class BoardController : MonoBehaviour
         board.OnUpdateTile -= UpdateTile;
         board.OnRemoveTile -= RemoveTile;
 
+        board.OnMerge -= TriggerMerge;
+        board.OnMove -= TriggerMove;
+
         board.OnGameOver -= TriggerGameOver;
+
+        settingsTrigger.OnButtonPress -= TriggerSettings;
+        settingsCancel.OnButtonPress -= CancelSettings;
     }
 
     protected void OnApplicationPause(bool pause)
@@ -93,12 +113,14 @@ public class BoardController : MonoBehaviour
 
     protected virtual IEnumerator StartBoard()
     {
+        AudioController.Instance.PlayBGM(config.bgm);
         yield return null;
         LoadState();
     }
 
     protected virtual void PrepareMovementData(Vector2Int direction)
     {
+        if (settingsActive) return;
         ProcessMovement(direction, 0, 0);
     }
 
@@ -190,6 +212,27 @@ public class BoardController : MonoBehaviour
     {
         OnGameOver?.Invoke();
         gameOver = true;
+        SaveState();
+    }
+
+    protected void TriggerMerge()
+    {
+        AudioController.Instance.PlayMerge();
+    }
+
+    protected void TriggerMove()
+    {
+        AudioController.Instance.PlayMove();
+    }
+
+    protected void TriggerSettings()
+    {
+        settingsActive = true;
+    }
+
+    protected void CancelSettings()
+    {
+        settingsActive = false;
     }
 
     protected void SaveState()

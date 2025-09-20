@@ -20,6 +20,8 @@ public class Board
     public event System.Action<int, int> OnRemoveTile;
 
     public event System.Action OnGameOver;
+    public event System.Action OnMerge;
+    public event System.Action OnMove;
 
     private System.Collections.Generic.List<State> states = new System.Collections.Generic.List<State>();
     private State state;
@@ -94,11 +96,14 @@ public class Board
         bool hasMovement = MoveTiles(mainAxis, staticAxis, horizontal, playerId);
         if (hasMovement)
         {
-            if (stateMergeScore > 0 && players > 0)
+            if (stateMergeScore > 0)
             {
-                //AddTile(nextPlayerId);
+                OnMerge?.Invoke();
+            } else
+            {
+                OnMove?.Invoke();
             }
-            AddTile(nextPlayerId, true);
+                AddTile(nextPlayerId, true);
             //PrintBoard();
             return stateMergeScore;
         }
@@ -135,7 +140,6 @@ public class Board
 
         if (!HasNullTile() && !CheckMergePossibilities(playerId))
         {
-            Debug.Log("[Board] Triggered game over!");
             OnGameOver?.Invoke();
         }
     }

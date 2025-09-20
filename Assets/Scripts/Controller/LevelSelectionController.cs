@@ -10,6 +10,8 @@ public class LevelSelectionController : MonoBehaviour
 
     public int selectedIndex = 0;
 
+    public List<PlayerType> playerTypes = new();
+
     private List<Level> levels = new();
 
     private void Awake()
@@ -30,10 +32,17 @@ public class LevelSelectionController : MonoBehaviour
     {
         List<TMP_Dropdown.OptionData> options = new();
 
+        /*
         foreach (var level in Enum.GetValues(typeof(Level)))
         {
             options.Add(new TMP_Dropdown.OptionData(level.ToString()));
             levels.Add((Level) level);
+        }
+        /**/
+        foreach (var playerType in playerTypes)
+        {
+            options.Add(new TMP_Dropdown.OptionData(playerType.level.ToString()));
+            levels.Add(playerType.level);
         }
 
         return options;
@@ -49,5 +58,10 @@ public class LevelSelectionController : MonoBehaviour
     public Level GetLevel()
     {
         return levels[selectedIndex];
+    }
+
+    public PlayerType GetPlayerType()
+    {
+        return playerTypes[selectedIndex];
     }
 }

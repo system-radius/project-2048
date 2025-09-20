@@ -28,6 +28,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             ""id"": ""0ce02543-72b2-4b41-9b91-aef945738c47"",
             ""actions"": [
                 {
+                    ""name"": ""Auto"",
+                    ""type"": ""Button"",
+                    ""id"": ""3fce88a7-0bd4-4e55-9c4e-ae2967bc6af5"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""Play"",
                     ""type"": ""Button"",
                     ""id"": ""af5a5502-7838-474b-bc78-949393af402b"",
@@ -148,6 +157,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Cancel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4eee2e87-a8ad-41c1-acac-0841d3ce7425"",
+                    ""path"": ""<Keyboard>/f12"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Auto"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -156,6 +176,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
 }");
         // Touch
         m_Touch = asset.FindActionMap("Touch", throwIfNotFound: true);
+        m_Touch_Auto = m_Touch.FindAction("Auto", throwIfNotFound: true);
         m_Touch_Play = m_Touch.FindAction("Play", throwIfNotFound: true);
         m_Touch_Undo = m_Touch.FindAction("Undo", throwIfNotFound: true);
         m_Touch_Restart = m_Touch.FindAction("Restart", throwIfNotFound: true);
@@ -228,6 +249,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     // Touch
     private readonly InputActionMap m_Touch;
     private List<ITouchActions> m_TouchActionsCallbackInterfaces = new List<ITouchActions>();
+    private readonly InputAction m_Touch_Auto;
     private readonly InputAction m_Touch_Play;
     private readonly InputAction m_Touch_Undo;
     private readonly InputAction m_Touch_Restart;
@@ -238,6 +260,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     {
         private @PlayerControls m_Wrapper;
         public TouchActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Auto => m_Wrapper.m_Touch_Auto;
         public InputAction @Play => m_Wrapper.m_Touch_Play;
         public InputAction @Undo => m_Wrapper.m_Touch_Undo;
         public InputAction @Restart => m_Wrapper.m_Touch_Restart;
@@ -253,6 +276,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         {
             if (instance == null || m_Wrapper.m_TouchActionsCallbackInterfaces.Contains(instance)) return;
             m_Wrapper.m_TouchActionsCallbackInterfaces.Add(instance);
+            @Auto.started += instance.OnAuto;
+            @Auto.performed += instance.OnAuto;
+            @Auto.canceled += instance.OnAuto;
             @Play.started += instance.OnPlay;
             @Play.performed += instance.OnPlay;
             @Play.canceled += instance.OnPlay;
@@ -275,6 +301,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
 
         private void UnregisterCallbacks(ITouchActions instance)
         {
+            @Auto.started -= instance.OnAuto;
+            @Auto.performed -= instance.OnAuto;
+            @Auto.canceled -= instance.OnAuto;
             @Play.started -= instance.OnPlay;
             @Play.performed -= instance.OnPlay;
             @Play.canceled -= instance.OnPlay;
@@ -312,6 +341,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     public TouchActions @Touch => new TouchActions(this);
     public interface ITouchActions
     {
+        void OnAuto(InputAction.CallbackContext context);
         void OnPlay(InputAction.CallbackContext context);
         void OnUndo(InputAction.CallbackContext context);
         void OnRestart(InputAction.CallbackContext context);

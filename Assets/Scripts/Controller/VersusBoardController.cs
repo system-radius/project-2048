@@ -2,9 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class VersusBoardController : BoardController
 {
+    [SerializeField]
+    private Button autoButton;
+
     private int currentPlayerId = 0;
     private int nextPlayerId = 1;
 
@@ -14,7 +18,7 @@ public class VersusBoardController : BoardController
 
     private Dictionary<int, Brain> brainMapping = new();
 
-    private bool hasHuman = false;
+    private bool hasHuman = false, auto = false;
 
     private Brain brain = null;
 
@@ -28,11 +32,13 @@ public class VersusBoardController : BoardController
     {
         SetupPlayers();
         base.OnEnable();
+        touchManager.OnAuto += TriggerAuto;
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
+        touchManager.OnAuto -= TriggerAuto;
     }
 
     protected override IEnumerator StartBoard()
@@ -52,10 +58,12 @@ public class VersusBoardController : BoardController
 
     private void SetupPlayers() {
         brainMapping.Clear();
+        hasHuman = auto = false;
         int index = 1;
-        foreach (var level in config.playerLevels)
+        List<AudioClip> clips = new List<AudioClip>();
+        foreach (var playerType in config.playerTypes)
         {
-            switch(level)
+            switch(playerType.level)
             {
                 case Level.Human:
                     brainMapping.Add(index, null);
@@ -63,21 +71,39 @@ public class VersusBoardController : BoardController
                     break;
                 case Level.Basic:
                     brainMapping.Add(index, new RandomBrain(index, config.players));
+                    clips.Add(playerType.clip);
                     break;
                 case Level.Average:
                     brainMapping.Add(index, new Brain(index, config.players));
+                    clips.Add(playerType.clip);
                     break;
                 case Level.Advanced:
                     brainMapping.Add(index, new Brain(index, config.players, 2));
+                    clips.Add(playerType.clip);
                     break;
             }
             index++;
+        }
+
+        autoButton.gameObject.SetActive(!hasHuman);
+        clips.Shuffle();
+        AudioController.Instance.PlayBGM(clips.ToArray());
+    }
+
+    private void TriggerAuto()
+    {
+        auto = !auto;
+        if (auto)
+        {
+            PrepareMovementData(new Vector2Int(0, 0));
         }
     }
 
     protected override void PrepareMovementData(Vector2Int direction)
     {
-        if (!hasHuman)
+        if (settingsActive) return;
+
+        if (!hasHuman || brain != null)
         {
             ExecuteArtificialMove();
             return;
@@ -106,7 +132,7 @@ public class VersusBoardController : BoardController
         OnChangePlayer?.Invoke(currentPlayerId);
 
         brain = brainMapping[currentPlayerId];
-        if (hasHuman)
+        if (hasHuman || auto)
         {
             ExecuteArtificialMove();
         }
@@ -127,6 +153,8 @@ public class VersusBoardController : BoardController
     {
         nextPlayerId = currentPlayerId;
         currentPlayerId = currentPlayerId - 1 == 0 ? config.players : currentPlayerId - 1;
+
+        brain = brainMapping[currentPlayerId];
         OnChangePlayer?.Invoke(currentPlayerId);
     }
 

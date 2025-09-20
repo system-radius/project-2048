@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class RandomBrain : Brain
@@ -9,23 +10,17 @@ public class RandomBrain : Brain
 
     public override Vector2Int Think(HypotheticalState state)
     {
-        List<Vector2Int> checkedMoves = new();
+        List<Vector2Int> availableMoves = moveList.ToList();
+        availableMoves.Shuffle();
         Vector2Int move = new Vector2Int(0, 0);
-        do
+        foreach (var checkMove in availableMoves)
         {
-            if (checkedMoves.Count >= 4)
-            {
-                Debug.Log("Break!");
-                break;
-            }
-
-            var checkMove = moveList[Random.Range(0, moveList.Length)];
-            if (checkedMoves.Contains(checkMove)) continue;
             if (state.ApplyMove(checkMove, GetId()) != null)
             {
                 move = checkMove;
+                break;
             }
-        } while (move.magnitude == 0);
+        }
 
         return move;
     }

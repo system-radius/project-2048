@@ -4,11 +4,13 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Config", menuName = "Settings/Config")]
 public class Configuration : ScriptableObject
 {
+    public AudioClip bgm;
+
     public Vector2Int size;
 
     public int winCondition;
 
     public int players;
 
-    public List<Level> playerLevels = new();
+    public List<PlayerType> playerTypes = new();
 }
