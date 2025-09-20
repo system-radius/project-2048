@@ -12,9 +12,9 @@ Features:
 - Fully offline
 
 ![Banner](Docs/Screenshots/FeatureGraphic.jpg)
-<img src="Docs/Screenshots/Normal.jpg" alt="Logo" width="300"/>
-<img src="Docs/Screenshots/vs_red.jpg" alt="Logo" width="300"/>
-<img src="Docs/Screenshots/vs_blue.jpg" alt="Logo" width="300"/>
+<img src="Docs/Screenshots/Normal.jpg" alt="Logo" width="200"/>
+<img src="Docs/Screenshots/vs_red.jpg" alt="Logo" width="200"/>
+<img src="Docs/Screenshots/vs_blue.jpg" alt="Logo" width="200"/>
 
 Credits:
 -- Menu
