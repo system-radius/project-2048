@@ -21,6 +21,10 @@ public class AudioController : Singleton<AudioController>
 
     private AudioClip defaultBgm;
 
+    private float mainVolume;
+    private float bgmVolume;
+    private float sfxVolume;
+
     private void Awake()
     {
         touchManager = TouchManager.Instance;
@@ -31,9 +35,11 @@ public class AudioController : Singleton<AudioController>
     private void OnEnable()
     {
         touchManager.OnCancel += TriggerCancel;
+        mainVolume = PlayerPrefs.GetFloat("mainVol", 1f);
+        bgmVolume = PlayerPrefs.GetFloat("bgmVol", 1f);
+        sfxVolume = PlayerPrefs.GetFloat("sfxVol", 1f);
 
-        bgmSource.volume = PlayerPrefs.GetFloat("bgmVol", 1f);
-        sfxSource.volume = PlayerPrefs.GetFloat("sfxVol", 1f);
+        RefreshVolume();
     }
 
     private void OnDisable()
@@ -98,11 +104,25 @@ public class AudioController : Singleton<AudioController>
 
     public void SetSFXVolume(float value)
     {
-        sfxSource.volume = value;
+        sfxVolume = value;
+        RefreshVolume();
     }
 
     public void SetBGMVolume(float value)
     {
-        bgmSource.volume = value;
+        bgmVolume = value;
+        RefreshVolume();
+    }
+
+    public void SetMainVolume(float value)
+    {
+        mainVolume = value;
+        RefreshVolume();
+    }
+
+    private void RefreshVolume()
+    {
+        bgmSource.volume = mainVolume * bgmVolume;
+        sfxSource.volume = mainVolume * sfxVolume;
     }
 }

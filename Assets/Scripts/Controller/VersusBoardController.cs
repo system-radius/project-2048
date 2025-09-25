@@ -67,6 +67,7 @@ public class VersusBoardController : BoardController
             {
                 case Level.Human:
                     brainMapping.Add(index, null);
+                    clips.Add(playerType.clip);
                     hasHuman = true;
                     break;
                 case Level.Basic:
