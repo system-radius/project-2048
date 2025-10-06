@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1174b80e46cc6f34f94d0d457eb65442, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
-  bgm: {fileID: 8300000, guid: 0fa85f5f88f2e694197c8b7aa55a6a2c, type: 3}
+  bgm:
+  - {fileID: 8300000, guid: d3658f1903b1d5c4a804d829f678b9e8, type: 3}
+  - {fileID: 8300000, guid: d64eb462c11da944f876d7d295270b19, type: 3}
+  - {fileID: 8300000, guid: d0b59de0c8d98ea4b8ea237e3b7b6abc, type: 3}
   size: {x: 4, y: 4}
   winCondition: 2048
   players: 0
-  playerLevels: 
+  playerTypes: []

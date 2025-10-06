@@ -67,20 +67,20 @@ public class VersusBoardController : BoardController
             {
                 case Level.Human:
                     brainMapping.Add(index, null);
-                    clips.Add(playerType.clip);
+                    clips.AddRange(playerType.audioClips);
                     hasHuman = true;
                     break;
                 case Level.Basic:
                     brainMapping.Add(index, new RandomBrain(index, config.players));
-                    clips.Add(playerType.clip);
+                    clips.AddRange(playerType.audioClips);
                     break;
                 case Level.Average:
                     brainMapping.Add(index, new Brain(index, config.players));
-                    clips.Add(playerType.clip);
+                    clips.AddRange(playerType.audioClips);
                     break;
                 case Level.Advanced:
                     brainMapping.Add(index, new Brain(index, config.players, 2));
-                    clips.Add(playerType.clip);
+                    clips.AddRange(playerType.audioClips);
                     break;
             }
             index++;

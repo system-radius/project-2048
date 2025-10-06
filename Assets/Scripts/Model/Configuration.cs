@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Config", menuName = "Settings/Config")]
 public class Configuration : ScriptableObject
 {
-    public AudioClip bgm;
+    public List<AudioClip> bgm;
 
     public Vector2Int size;
 

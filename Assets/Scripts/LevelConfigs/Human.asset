@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c54ddf7565d8c9e4d8b00fa921850f51, type: 3}
   m_Name: Human
   m_EditorClassIdentifier: 
-  clip: {fileID: 8300000, guid: 0fa85f5f88f2e694197c8b7aa55a6a2c, type: 3}
+  audioClips:
+  - {fileID: 8300000, guid: d64eb462c11da944f876d7d295270b19, type: 3}
+  - {fileID: 8300000, guid: d3658f1903b1d5c4a804d829f678b9e8, type: 3}
+  - {fileID: 8300000, guid: d0b59de0c8d98ea4b8ea237e3b7b6abc, type: 3}
   level: 0

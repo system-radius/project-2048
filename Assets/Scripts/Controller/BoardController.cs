@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardController : MonoBehaviour
@@ -113,7 +114,9 @@ public class BoardController : MonoBehaviour
 
     protected virtual IEnumerator StartBoard()
     {
-        AudioController.Instance.PlayBGM(config.bgm);
+        List<AudioClip> audioClips = new(config.bgm);
+        audioClips.Shuffle();
+        AudioController.Instance.PlayBGM(audioClips.ToArray());
         yield return null;
         LoadState();
     }

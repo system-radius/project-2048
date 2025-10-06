@@ -67,6 +67,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "NegateBack",
+                    "type": "Button",
+                    "id": "882d51b9-3e1b-4771-9db1-6bc9dd7fd393",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -128,7 +137,7 @@
                 {
                     "name": "",
                     "id": "8002d087-84a9-4f3e-970f-edccfe10e35e",
-                    "path": "<Keyboard>/escape",
+                    "path": "<Keyboard>/backspace",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -144,6 +153,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Auto",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1017e391-ae15-4719-a2b1-5f7c1a8ca128",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "NegateBack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

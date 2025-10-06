@@ -89,6 +89,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""NegateBack"",
+                    ""type"": ""Button"",
+                    ""id"": ""882d51b9-3e1b-4771-9db1-6bc9dd7fd393"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -150,7 +159,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""8002d087-84a9-4f3e-970f-edccfe10e35e"",
-                    ""path"": ""<Keyboard>/escape"",
+                    ""path"": ""<Keyboard>/backspace"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -168,6 +177,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Auto"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1017e391-ae15-4719-a2b1-5f7c1a8ca128"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""NegateBack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -183,6 +203,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Touch_Cancel = m_Touch.FindAction("Cancel", throwIfNotFound: true);
         m_Touch_PrimaryTouchContact = m_Touch.FindAction("PrimaryTouchContact", throwIfNotFound: true);
         m_Touch_PrimaryTouchPosition = m_Touch.FindAction("PrimaryTouchPosition", throwIfNotFound: true);
+        m_Touch_NegateBack = m_Touch.FindAction("NegateBack", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -256,6 +277,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Touch_Cancel;
     private readonly InputAction m_Touch_PrimaryTouchContact;
     private readonly InputAction m_Touch_PrimaryTouchPosition;
+    private readonly InputAction m_Touch_NegateBack;
     public struct TouchActions
     {
         private @PlayerControls m_Wrapper;
@@ -267,6 +289,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         public InputAction @Cancel => m_Wrapper.m_Touch_Cancel;
         public InputAction @PrimaryTouchContact => m_Wrapper.m_Touch_PrimaryTouchContact;
         public InputAction @PrimaryTouchPosition => m_Wrapper.m_Touch_PrimaryTouchPosition;
+        public InputAction @NegateBack => m_Wrapper.m_Touch_NegateBack;
         public InputActionMap Get() { return m_Wrapper.m_Touch; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -297,6 +320,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @PrimaryTouchPosition.started += instance.OnPrimaryTouchPosition;
             @PrimaryTouchPosition.performed += instance.OnPrimaryTouchPosition;
             @PrimaryTouchPosition.canceled += instance.OnPrimaryTouchPosition;
+            @NegateBack.started += instance.OnNegateBack;
+            @NegateBack.performed += instance.OnNegateBack;
+            @NegateBack.canceled += instance.OnNegateBack;
         }
 
         private void UnregisterCallbacks(ITouchActions instance)
@@ -322,6 +348,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @PrimaryTouchPosition.started -= instance.OnPrimaryTouchPosition;
             @PrimaryTouchPosition.performed -= instance.OnPrimaryTouchPosition;
             @PrimaryTouchPosition.canceled -= instance.OnPrimaryTouchPosition;
+            @NegateBack.started -= instance.OnNegateBack;
+            @NegateBack.performed -= instance.OnNegateBack;
+            @NegateBack.canceled -= instance.OnNegateBack;
         }
 
         public void RemoveCallbacks(ITouchActions instance)
@@ -348,5 +377,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         void OnCancel(InputAction.CallbackContext context);
         void OnPrimaryTouchContact(InputAction.CallbackContext context);
         void OnPrimaryTouchPosition(InputAction.CallbackContext context);
+        void OnNegateBack(InputAction.CallbackContext context);
     }
 }

@@ -64,14 +64,14 @@ public class Utils : Singleton<Utils>
         }
     }
 
-    public IEnumerator FadeTextIn(TextMeshProUGUI textObject, float duration)
+    public IEnumerator FadeTextIn(TextMeshProUGUI textObject, float duration, IEnumerator chainedCoroutine = null)
     {
         Color color = textObject.color;
         color.a = 0f;
         return (LerpTextFade(textObject, duration, 1f));
     }
 
-    public IEnumerator FadeTextOut(TextMeshProUGUI textObject, float duration)
+    public IEnumerator FadeTextOut(TextMeshProUGUI textObject, float duration, IEnumerator chainedCoroutine = null)
     {
         Color color = textObject.color;
         color.a = 1f;

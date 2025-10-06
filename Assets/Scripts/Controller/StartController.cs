@@ -29,15 +29,15 @@ public class StartController : MonoBehaviour
 
     private void OnEnable()
     {
-        touchManager.OnPlay += StartNormal;
-        touchManager.OnRestart += StartVersus;
+        //touchManager.OnPlay += StartNormal;
+        //touchManager.OnRestart += StartVersus;
         touchManager.OnCancel += DisplayStart;
     }
 
     private void OnDisable()
     {
-        touchManager.OnPlay -= StartNormal;
-        touchManager.OnRestart -= StartVersus;
+        //touchManager.OnPlay -= StartNormal;
+        //touchManager.OnRestart -= StartVersus;
         touchManager.OnCancel -= DisplayStart;
     }
 

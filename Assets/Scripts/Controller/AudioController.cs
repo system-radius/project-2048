@@ -1,8 +1,10 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AudioController : Singleton<AudioController>
 {
+    [SerializeField]
     private TouchManager touchManager;
 
     [SerializeField]
@@ -19,7 +21,8 @@ public class AudioController : Singleton<AudioController>
 
     private Coroutine bgmCoroutine;
 
-    private AudioClip defaultBgm;
+    [SerializeField]
+    private List<AudioClip> defaultBgms;
 
     private float mainVolume;
     private float bgmVolume;
@@ -27,8 +30,6 @@ public class AudioController : Singleton<AudioController>
 
     private void Awake()
     {
-        touchManager = TouchManager.Instance;
-        defaultBgm = bgmSource.clip;
         PlayDefaultBGM();
     }
 
@@ -65,6 +66,10 @@ public class AudioController : Singleton<AudioController>
     public void PlayBGM(params AudioClip[] clips)
     {
         bgmSource.Stop();
+        if (bgmCoroutine != null)
+        {
+            StopCoroutine(bgmCoroutine);
+        }
         bgmCoroutine = StartCoroutine(PlayAllBGM(clips));
     }
 
@@ -80,26 +85,21 @@ public class AudioController : Singleton<AudioController>
             var clip = clips[i];
             bgmSource.clip = clip;
             bgmSource.Play();
+
+            //SongDisplay.Instance.AddMessage(clip.name, clip.length);
             yield return new WaitForSeconds(clip.length);
         }
     }
 
     private void TriggerCancel()
     {
-        if (bgmCoroutine != null)
-        {
-            bgmSource.Stop();
-            StopCoroutine(bgmCoroutine);
-
-            PlayDefaultBGM();
-        }
+        PlayDefaultBGM();
     }
 
     private void PlayDefaultBGM()
     {
-        bgmSource.clip = defaultBgm;
-        bgmSource.loop = true;
-        bgmSource.Play();
+        defaultBgms.Shuffle();
+        PlayBGM(defaultBgms.ToArray());
     }
 
     public void SetSFXVolume(float value)

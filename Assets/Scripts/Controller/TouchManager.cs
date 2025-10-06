@@ -23,6 +23,12 @@ public class TouchManager : Singleton<TouchManager>, IRestartTrigger, ITouchCont
     {
         Application.targetFrameRate = 60;
         playerControls = new PlayerControls();
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
+    }
+
+    private void OnDestroy()
+    {
+        Screen.sleepTimeout = SleepTimeout.SystemSetting;
     }
 
     private void OnEnable()
