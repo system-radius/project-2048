@@ -9,10 +9,15 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     private VersusScoreController scoreController;
 
     [SerializeField]
-    private List<TutorialStepController> steps = new();
+    private GameObject tutorialStepsContainer;
 
     [SerializeField]
-    private GameObject tutorialStepsContainer;
+    private GameObject cancelButton;
+
+    [SerializeField]
+    private ButtonTrigger skipButton;
+
+    private List<TutorialStepController> steps;
 
     private int stepIndex = -1;
 
@@ -30,7 +35,6 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     private void Awake()
     {
         steps = new(tutorialStepsContainer.GetComponentsInChildren<TutorialStepController>());
-        Debug.Log("Steps: " + steps.Count);
     }
 
     protected override Board InitializeBoard()
@@ -46,6 +50,8 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
 
         scoreController.Initialize((IVersusScoreTrigger)this);
         scoreController.Initialize((IGameOverTrigger)this);
+
+        skipButton.OnButtonPress += SkipTutorial;
     }
 
     protected override void OnDisable()
@@ -54,6 +60,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
         touchManager.OnStartTouch -= ResetTouch;
         touchManager.OnEndTouch -= DoTouch;
         scoreController.Terminate();
+        skipButton.OnButtonPress -= SkipTutorial;
     }
 
     protected override IEnumerator StartBoard()
@@ -68,6 +75,8 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     protected override void Restart()
     {
         base.Restart();
+        cancelButton.SetActive(false);
+        skipButton.gameObject.SetActive(true);
         currentPlayerId = 0;
         nextPlayerId = 1;
         stepIndex = -1;
@@ -81,7 +90,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
 
     private void DoTouch(Vector3 vector, float time)
     {
-        if (settingsActive || swiped) return;
+        if (settingsActive || swiped || step == null) return;
         Advance(step.Complete(new CompletionData(StepRequirement.Tap)));
     }
 
@@ -152,6 +161,32 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
         PrepareMovementData(direction);
     }
 
+    private void SkipTutorial()
+    {
+        step.Deactivate();
+        for (int i = stepIndex; i < steps.Count; i++)
+        {
+            var currentStep = steps[i];
+            if (currentStep.requirement == StepRequirement.AI || currentStep.requirement == StepRequirement.Swipe)
+            {
+                int score = ProcessMovement(currentStep.direction, currentStep.currentPlayer, currentStep.nextPlayer);
+                if (score > 0)
+                {
+                    OnPlayerScore?.Invoke(score, currentStep.currentPlayer);
+                }
+                if (currentStep.spawnTile)
+                {
+                    Vector2Int location = currentStep.location;
+                    board.SpawnTile(location.x, location.y, currentStep.tileValue, currentStep.playerOwner);
+                }
+            }
+        }
+
+        stepIndex = steps.Count - 1;
+        step = steps[stepIndex];
+        Advance(true);
+    }
+
     private void Advance(bool status)
     {
         if (!status) return;
@@ -160,14 +195,16 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             step.Deactivate();
         }
         stepIndex++;
-        if (stepIndex == steps.Count)
+        if (stepIndex >= steps.Count)
         {
-            //PlayerPrefs.SetInt("tutorialDone", 1);
-            //PlayerPrefs.Save();
-            Debug.Log("Tutorial complete!");
+            PlayerPrefs.SetInt("tutorialDone", 1);
+            PlayerPrefs.Save();
+            //Debug.Log("Tutorial complete!");
             currentPlayerId = step.currentPlayer;
             nextPlayerId = step.nextPlayer;
             step = null;
+            cancelButton.SetActive(true);
+            skipButton.gameObject.SetActive(false);
             NextPlayer();
             return;
         }

@@ -54,6 +54,7 @@ public class ToggleDisplay : MonoBehaviour
 
     protected void ShowPanel()
     {
+        if (gameObject)
         StartCoroutine(Toggle(true));
     }
 
