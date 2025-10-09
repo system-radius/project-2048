@@ -3,7 +3,8 @@ using UnityEngine;
 public class VersusBackgroundController : BackgroundController
 {
     [SerializeField]
-    private VersusBoardController versusBoardController;
+    private GameObject versusBoardController;
+    private IPlayerChange playerChange;
 
     private Color32[] bgColors =
     {
@@ -11,16 +12,25 @@ public class VersusBackgroundController : BackgroundController
         Utils.HexToColor32("#000061"),
     };
 
+    private void Awake()
+    {
+        playerChange = versusBoardController.GetComponent<IPlayerChange>();
+        if (playerChange == null)
+        {
+            Debug.LogError("Player change object is null!");
+        }
+    }
+
     protected override void OnEnable()
     {
         base.OnEnable();
-        versusBoardController.OnChangePlayer += ChangeBackground;
+        playerChange.OnChangePlayer += ChangeBackground;
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        versusBoardController.OnChangePlayer -= ChangeBackground;
+        playerChange.OnChangePlayer -= ChangeBackground;
         worldCamera.Reset();
     }
 

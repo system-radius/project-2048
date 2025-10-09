@@ -1,7 +1,8 @@
+using System;
 using System.Text;
 using UnityEngine;
 
-public class Board
+public class Board : IBoardTrigger
 {
     private int sizeX = 4;
     private int sizeY = 4;
@@ -9,15 +10,15 @@ public class Board
     private int tile4Requirement = 75;
     private int tile4ReqDefault = 75;
 
-    private int stateMergeScore;
+    protected int stateMergeScore;
     //private int[,] values;
     private Tile[,] tiles;
 
-    public event System.Action<int, int, int, int, int, int> OnMergeTile;
-    public event System.Action<int, int, int, int> OnMoveTile;
-    public event System.Action<int, int, int, int> OnAddTile;
-    public event System.Action<int, int, int, int> OnUpdateTile;
-    public event System.Action<int, int> OnRemoveTile;
+    public event Action<Vector2Int, Vector2Int, int, int> OnMergeTile;
+    public event Action<Vector2Int, Vector2Int> OnMoveTile;
+    public event Action<Vector2Int, int, int> OnAddTile;
+    public event Action<Vector2Int, int, int> OnUpdateTile;
+    public event Action<Vector2Int> OnRemoveTile;
 
     public event System.Action OnGameOver;
     public event System.Action OnMerge;
@@ -91,19 +92,13 @@ public class Board
         return new Vector2Int(sizeX, sizeY);
     }
 
-    public int DetectTileMovement(AxisData mainAxis, AxisData staticAxis, bool horizontal, int playerId = 0, int nextPlayerId = 0)
+    public virtual int DetectTileMovement(AxisData mainAxis, AxisData staticAxis, bool horizontal, int playerId = 0, int nextPlayerId = 0)
     {
         bool hasMovement = MoveTiles(mainAxis, staticAxis, horizontal, playerId);
         if (hasMovement)
         {
-            if (stateMergeScore > 0)
-            {
-                OnMerge?.Invoke();
-            } else
-            {
-                OnMove?.Invoke();
-            }
-                AddTile(nextPlayerId, true);
+            FireMovementEvents();
+            AddTile(nextPlayerId, true);
             //PrintBoard();
             return stateMergeScore;
         }
@@ -111,13 +106,25 @@ public class Board
         return -1;
     }
 
-    private void AddTile(int playerId, bool prepareState = false)
+    protected void FireMovementEvents()
+    {
+        if (stateMergeScore > 0)
+        {
+            OnMerge?.Invoke();
+        }
+        else
+        {
+            OnMove?.Invoke();
+        }
+    }
+
+    public void AddTile(int playerId, bool prepareState = false)
     {
         bool tileAdded = false;
         do
         {
-            int x = Random.Range(0, sizeX);
-            int y = Random.Range(0, sizeY);
+            int x = UnityEngine.Random.Range(0, sizeX);
+            int y = UnityEngine.Random.Range(0, sizeY);
 
             if (!HasNullTile())
             {
@@ -126,7 +133,7 @@ public class Board
 
             if (tiles[x, y] != null) continue;
 
-            SpawnTile(x, y, (Random.Range(0, 100) > tile4Requirement) ? 4 : 2, playerId);
+            SpawnTile(x, y, (UnityEngine.Random.Range(0, 100) > tile4Requirement) ? 4 : 2, playerId);
             //SpawnTile(x, y, (Random.Range(0, 100) > 75) ? 1024 : 512);
             //SpawnTile(x, y, 2);
 
@@ -144,9 +151,9 @@ public class Board
         }
     }
 
-    private void SpawnTile(int x, int y, int value, int playerId = 0) {
+    public void SpawnTile(int x, int y, int value, int playerId = 0) {
         tiles[x, y] = new Tile(value, playerId);
-        OnAddTile?.Invoke(x, y, value, playerId);
+        OnAddTile?.Invoke(new Vector2Int(x, y), value, playerId);
     }
 
     private bool HasNullTile()
@@ -188,7 +195,7 @@ public class Board
         return true;
     }
 
-    private bool MoveTiles(AxisData mainAxis, AxisData staticAxis, bool horizontal, int playerId)
+    protected bool MoveTiles(AxisData mainAxis, AxisData staticAxis, bool horizontal, int playerId)
     {
         int moveMergeScore = 0;
         bool hasMovement = false;
@@ -218,7 +225,7 @@ public class Board
                             {
                                 moveMergeScore += mergeScore;
                                 tiles[x, y] = nextTile;
-                                OnMergeTile?.Invoke(nextX, nextY, x, y, mergeScore, playerId);
+                                OnMergeTile?.Invoke(new Vector2Int(nextX, nextY), new Vector2Int(x, y), mergeScore, playerId);
                                 tiles[nextX, nextY] = null;
                                 hasMovement = true;
                             }
@@ -247,7 +254,7 @@ public class Board
     {
         tiles[x, y] = null;
         tiles[dx, dy] = tile;
-        OnMoveTile?.Invoke(x, y, dx, dy);
+        OnMoveTile?.Invoke(new Vector2Int(x, y), new Vector2Int(dx, dy));
     }
 
     private bool CheckMergePossibilities(int playerId = 0)
@@ -301,7 +308,7 @@ public class Board
                 if (grid[x, y].value == 0 && tile != null)
                 {
                     tiles[x, y] = null;
-                    OnRemoveTile?.Invoke(x, y);
+                    OnRemoveTile?.Invoke(new Vector2Int(x, y));
                 } else if (grid[x, y].value > 0 && tile == null)
                 {
                     SpawnTile(x, y, grid[x, y].value, grid[x, y].playerId);
@@ -309,7 +316,7 @@ public class Board
                 {
                     tiles[x, y].value = grid[x, y].value;
                     tiles[x, y].playerId = grid[x, y].playerId;
-                    OnUpdateTile?.Invoke(x, y, tiles[x, y].value, tiles[x, y].playerId);
+                    OnUpdateTile?.Invoke(new Vector2Int(x, y), tiles[x, y].value, tiles[x, y].playerId);
                 }
             }
         }
@@ -350,6 +357,7 @@ public class Board
         if (this.sizeX != sizeX || this.sizeY != sizeY) return false;
 
         ClearBoard();
+        bool spawnedTile = false;
         for (int x = 0; x < sizeX; x++)
         {
             for (int y = 0; y < sizeY; y++)
@@ -359,12 +367,18 @@ public class Board
                 if (value > 0)
                 {
                     SpawnTile(x, y, value, player);
+                    spawnedTile = true;
                 }
             }
         }
 
-        //PrintBoard();
+        if (!spawnedTile)
+        {
+            return false;
+        }
+
         PrepareState();
+        Utils.PrintBoard(state.GetGrid(), sizeX, sizeY);
         return true;
     }
 
@@ -378,7 +392,7 @@ public class Board
             {
                 if (tiles[i, j] != null)
                 {
-                    OnRemoveTile?.Invoke(i, j);
+                    OnRemoveTile?.Invoke(new Vector2Int(i, j));
                 }
                 tiles[i, j] = null;
             }

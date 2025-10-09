@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class VersusScoreController : MonoBehaviour
+public class VersusScoreController : MonoBehaviour, IInitializable<IVersusScoreTrigger>, IInitializable<IGameOverTrigger>, ITerminable
 {
-    private TouchManager touchManager;
-
     [SerializeField]
-    private VersusBoardController versusBoardController;
+    private TouchManager touchManager;
 
     [SerializeField]
     private List<ScoreView> scoreBoard = new List<ScoreView>();
@@ -16,27 +14,32 @@ public class VersusScoreController : MonoBehaviour
 
     private int[] scores;
 
-    private void Awake()
+    private IGameOverTrigger gameOverTrigger;
+    private IVersusScoreTrigger scoreTrigger;
+
+    public void Initialize(IVersusScoreTrigger value)
     {
-        touchManager = TouchManager.Instance;
+        value.OnPlayerScore += ShowPlayerScoreIncrement;
+        scoreTrigger = value;
     }
 
-    private void OnEnable()
+    public void Initialize(IGameOverTrigger value)
     {
-        versusBoardController.OnGameOver += TriggerGameOver;
+        value.OnGameOver += TriggerGameOver;
+        gameOverTrigger = value;
+
         touchManager.OnRestart += Restart;
         touchManager.OnCancel += Restart;
-        versusBoardController.OnPlayerScore += ShowPlayerScoreIncrement;
 
         Restart();
     }
 
-    private void OnDisable()
+    public void Terminate()
     {
-        versusBoardController.OnGameOver -= TriggerGameOver;
+        gameOverTrigger.OnGameOver -= TriggerGameOver;
         touchManager.OnRestart -= Restart;
         touchManager.OnCancel -= Restart;
-        versusBoardController.OnPlayerScore -= ShowPlayerScoreIncrement;
+        scoreTrigger.OnPlayerScore -= ShowPlayerScoreIncrement;
     }
 
     private void ShowPlayerScoreIncrement(int increment, int playerId)
@@ -62,7 +65,6 @@ public class VersusScoreController : MonoBehaviour
 
     private void TriggerGameOver()
     {
-        Debug.Log("[VersusScoreController] Triggered game over!");
         int highestScoreIndex = -1;
         int highestScore = -1;
         for (int i = 0; i < scores.Length; i++)

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoardController : MonoBehaviour
+public class BoardController : MonoBehaviour, IScoreIncrement, IScoreUpdate, IGameOverTrigger
 {
     [SerializeField]
     protected SwipeDetection swipeDetection;
@@ -17,6 +17,10 @@ public class BoardController : MonoBehaviour
     [SerializeField]
     protected ButtonTrigger settingsCancel;
 
+    [SerializeField]
+    protected TileViewController tileViewController;
+
+    [SerializeField]
     protected TouchManager touchManager;
 
     protected Board board;
@@ -26,12 +30,6 @@ public class BoardController : MonoBehaviour
 
     protected int sizeX;
     protected int sizeY;
-
-    public event Action<Vector2Int, Vector2Int, int, int> OnMergeTile;
-    public event Action<Vector2Int, Vector2Int> OnMoveTile;
-    public event Action<Vector2Int, int, int> OnAddTile;
-    public event Action<Vector2Int, int, int> OnUpdateTile;
-    public event Action<Vector2Int> OnRemoveTile;
 
     public event Action<int> OnIncrementScore;
     public event Action<int> OnUpdateScore;
@@ -45,31 +43,27 @@ public class BoardController : MonoBehaviour
 
     protected string saveKey = "normal_";
 
-    protected virtual void Awake()
+    protected virtual Board InitializeBoard()
     {
-        touchManager = TouchManager.Instance;
-        mainAxis = new AxisData();
-        staticAxis = new AxisData();
-        staticAxis.start = 0;
-        staticAxis.update = 1;
+        return new Board(sizeX, sizeY, config.players);
     }
 
     protected virtual void OnEnable()
     {
+        mainAxis = new AxisData();
+        staticAxis = new AxisData();
+        staticAxis.start = 0;
+        staticAxis.update = 1;
+
         sizeX = config.size.x;
         sizeY = config.size.y;
 
-        board = new Board(sizeX, sizeY, config.players);
+        board = InitializeBoard();
+        tileViewController.Initialize(board);
         touchManager.OnUndo += Undo;
         touchManager.OnRestart += Restart;
         touchManager.OnCancel += SaveState;
         swipeDetection.OnSwipe += PrepareMovementData;
-
-        board.OnMergeTile += MergeTile;
-        board.OnMoveTile += MoveTile;
-        board.OnAddTile += AddTile;
-        board.OnUpdateTile += UpdateTile;
-        board.OnRemoveTile += RemoveTile;
 
         board.OnMerge += TriggerMerge;
         board.OnMove += TriggerMove;
@@ -84,16 +78,11 @@ public class BoardController : MonoBehaviour
 
     protected virtual void OnDisable()
     {
+        tileViewController.Terminate();
         touchManager.OnUndo -= Undo;
         touchManager.OnRestart -= Restart;
         touchManager.OnCancel -= SaveState;
         swipeDetection.OnSwipe -= PrepareMovementData;
-
-        board.OnMergeTile -= MergeTile;
-        board.OnMoveTile -= MoveTile;
-        board.OnAddTile -= AddTile;
-        board.OnUpdateTile -= UpdateTile;
-        board.OnRemoveTile -= RemoveTile;
 
         board.OnMerge -= TriggerMerge;
         board.OnMove -= TriggerMove;
@@ -134,36 +123,11 @@ public class BoardController : MonoBehaviour
         int moveScore = -1;
         if (direction.x != 0)
         {
-            if (direction.x < 0)
-            {
-                mainAxis.start = sizeX - 1;
-                mainAxis.end = -1;
-            }
-            else
-            {
-                mainAxis.start = 0;
-                mainAxis.end = sizeX;
-            }
-            mainAxis.update = direction.x;
-            staticAxis.end = sizeY;
-            moveScore = board.DetectTileMovement(mainAxis, staticAxis, true, playerId, nextPlayerId);
+            moveScore = MoveAlongX(direction.x, playerId, nextPlayerId);
         }
-
         else if (direction.y != 0)
         {
-            if (direction.y < 0)
-            {
-                mainAxis.start = sizeY - 1;
-                mainAxis.end = -1;
-            }
-            else
-            {
-                mainAxis.start = 0;
-                mainAxis.end = sizeY;
-            }
-            mainAxis.update = direction.y;
-            staticAxis.end = sizeX;
-            moveScore = board.DetectTileMovement(mainAxis, staticAxis, false, playerId, nextPlayerId);
+            moveScore = MoveAlongY(direction.y, playerId, nextPlayerId);
         }
 
         if (moveScore > 0)
@@ -179,29 +143,40 @@ public class BoardController : MonoBehaviour
         return moveScore;
     }
 
-    protected void MergeTile(int x, int y, int dx, int dy, int value, int playerId)
+    private int MoveAlongX(int directionality, int playerId, int nextPlayerId)
     {
-        OnMergeTile?.Invoke(new Vector2Int(x, y), new Vector2Int(dx, dy), value, playerId);
+        int axisStart = 0;
+        int axisEnd = sizeX;
+        if (directionality < 0)
+        {
+            axisStart = sizeX - 1;
+            axisEnd = -1;
+        }
+
+        return Move(axisStart, axisEnd, directionality, sizeY, true, playerId, nextPlayerId);
     }
 
-    protected void MoveTile(int x, int y, int dx, int dy)
+    private int MoveAlongY(int directionality, int playerId, int nextPlayerId)
     {
-        OnMoveTile?.Invoke(new Vector2Int(x, y), new Vector2Int(dx, dy));
+        int axisStart = 0;
+        int axisEnd = sizeY;
+        if (directionality < 0)
+        {
+            axisStart = sizeY - 1;
+            axisEnd = -1;
+        }
+
+        return Move(axisStart, axisEnd, directionality, sizeX, false, playerId, nextPlayerId);
     }
 
-    protected void AddTile(int x, int y, int value, int playerId)
+    private int Move(int mainAxisStart, int mainAxisEnd, int mainAxisUpdate, int staticAxisEnd, bool horizontal, int playerId, int nextPlayerId)
     {
-        OnAddTile?.Invoke(new Vector2Int(x, y), value, playerId);
-    }
+        mainAxis.start = mainAxisStart;
+        mainAxis.end = mainAxisEnd;
+        mainAxis.update = mainAxisUpdate;
+        staticAxis.end = staticAxisEnd;
 
-    protected void UpdateTile(int x, int y, int value, int playerId)
-    {
-        OnUpdateTile?.Invoke(new Vector2Int(x, y), value, playerId);
-    }
-
-    protected void RemoveTile(int x, int y)
-    {
-        OnRemoveTile?.Invoke(new Vector2Int(x, y));
+        return board.DetectTileMovement(mainAxis, staticAxis, horizontal, playerId, nextPlayerId);
     }
 
     protected virtual void Restart()
@@ -259,6 +234,7 @@ public class BoardController : MonoBehaviour
     {
         if (!board.LoadState(saveKey))
         {
+            Debug.Log("Restarting!");
             Restart();
             return;
         }

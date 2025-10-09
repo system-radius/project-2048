@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [DefaultExecutionOrder(3)]
-public class TileViewController : MonoBehaviour
+public class TileViewController : MonoBehaviour, IInitializable<IBoardTrigger>, ITerminable
 {
     [SerializeField]
     private Configuration config;
@@ -18,33 +18,32 @@ public class TileViewController : MonoBehaviour
 
     private GameObject container;
 
-    private void OnEnable()
+    private IBoardTrigger boardTrigger;
+
+    public void Initialize(IBoardTrigger boardTrigger)
     {
         sizeX = config.size.x;
         sizeY = config.size.y;
         Restart();
 
-        boardController.OnMergeTile += MergeTiles;
-        boardController.OnMoveTile += MoveTile;
-        boardController.OnAddTile += SpawnTile;
-        boardController.OnUpdateTile += UpdateTile;
-        boardController.OnRemoveTile += RemoveTile;
+        this.boardTrigger = boardTrigger;
+        boardTrigger.OnMergeTile += MergeTiles;
+        boardTrigger.OnMoveTile += MoveTile;
+        boardTrigger.OnAddTile += SpawnTile;
+        boardTrigger.OnUpdateTile += UpdateTile;
+        boardTrigger.OnRemoveTile += RemoveTile;
     }
 
-    private void OnDisable()
+    public void Terminate()
     {
         Destroy(container);
         container = null;
 
-        boardController.OnMergeTile -= MergeTiles;
-        boardController.OnMoveTile -= MoveTile;
-        boardController.OnAddTile -= SpawnTile;
-        boardController.OnUpdateTile -= UpdateTile;
-        boardController.OnRemoveTile -= RemoveTile;
-    }
-
-    private void Start()
-    {
+        boardTrigger.OnMergeTile -= MergeTiles;
+        boardTrigger.OnMoveTile -= MoveTile;
+        boardTrigger.OnAddTile -= SpawnTile;
+        boardTrigger.OnUpdateTile -= UpdateTile;
+        boardTrigger.OnRemoveTile -= RemoveTile;
     }
 
     public void SpawnTile(Vector2Int coord, int value, int playerId)

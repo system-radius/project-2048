@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class VersusBoardController : BoardController
+public class VersusBoardController : BoardController, IPlayerChange, IVersusScoreTrigger
 {
     [SerializeField]
     private Button autoButton;
+
+    [SerializeField]
+    private VersusScoreController scoreController;
 
     private int currentPlayerId = 0;
     private int nextPlayerId = 1;
@@ -22,23 +25,21 @@ public class VersusBoardController : BoardController
 
     private Brain brain = null;
 
-    protected override void Awake()
-    {
-        base.Awake();
-        saveKey = "versus_";
-    }
-
     protected override void OnEnable()
     {
+        saveKey = "versus_";
         SetupPlayers();
         base.OnEnable();
         touchManager.OnAuto += TriggerAuto;
+        scoreController.Initialize((IVersusScoreTrigger)this);
+        scoreController.Initialize((IGameOverTrigger)this);
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
         touchManager.OnAuto -= TriggerAuto;
+        scoreController.Terminate();
     }
 
     protected override IEnumerator StartBoard()
@@ -56,7 +57,7 @@ public class VersusBoardController : BoardController
         //brain = new Brain(nextPlayerId, config.players);
     }
 
-    private void SetupPlayers() {
+    protected virtual void SetupPlayers() {
         brainMapping.Clear();
         hasHuman = auto = false;
         int index = 1;
