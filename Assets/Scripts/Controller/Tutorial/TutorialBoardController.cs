@@ -213,6 +213,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
 
         stepIndex = steps.Count - 1;
         step = steps[stepIndex];
+        undoButton.SetActive(false);
         Advance(true);
     }
 
@@ -232,18 +233,18 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             currentPlayerId = step.currentPlayer;
             nextPlayerId = step.nextPlayer;
             step = null;
-            cancelButton.SetActive(true);
-            skipButton.gameObject.SetActive(false);
-            undoButton.SetActive(false);
             NextPlayer();
             checker.ReloadButton();
             complete = true;
+            cancelButton.SetActive(true);
+            skipButton.gameObject.SetActive(false);
+            undoButton.SetActive(false);
             return;
         }
 
         step = steps[stepIndex];
         step.Activate();
-        undoButton.SetActive(stepIndex > 0);
+        StartCoroutine(DelayDisableUndo());
 
         if (step.requirement == StepRequirement.AI)
         {
@@ -269,15 +270,8 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
         {
             step.Deactivate();
         }
-        stepIndex--;
-        if (stepIndex <= 0)
-        {
-            stepIndex = 0;
-        }
-        undoButton.SetActive(stepIndex > 0);
-
+        DecreaseStepIndex();
         step = steps[stepIndex];
-        step.Activate();
 
         if (step == null || (step != null && (step.requirement == StepRequirement.AI || step.requirement == StepRequirement.Swipe)))
         {
@@ -287,6 +281,31 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             {
                 OnPlayerScore?.Invoke(-score, step.currentPlayer);
             }
+
+            if (step.requirement == StepRequirement.AI)
+            {
+                DecreaseStepIndex();
+                step = steps[stepIndex];
+            }
         }
+
+        step.Activate();
+    }
+
+    private void DecreaseStepIndex()
+    {
+        stepIndex--;
+        if (stepIndex <= 0)
+        {
+            stepIndex = 0;
+        }
+
+        StartCoroutine(DelayDisableUndo());
+    }
+
+    private IEnumerator DelayDisableUndo()
+    {
+        yield return null;
+        undoButton.SetActive(stepIndex > 0 && !complete);
     }
 }
