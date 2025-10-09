@@ -17,6 +17,12 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     [SerializeField]
     private ButtonTrigger skipButton;
 
+    [SerializeField]
+    private GameObject undoButton;
+
+    [SerializeField]
+    private TutorialCheck checker;
+
     private List<TutorialStepController> steps;
 
     private int stepIndex = -1;
@@ -26,7 +32,8 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     public event Action<int> OnChangePlayer;
     public event Action<int, int> OnPlayerScore;
 
-    private bool swiped = false;
+    private bool cancelTap = false;
+    private bool complete = false;
 
     private int currentPlayerId = 0, nextPlayerId = 1;
 
@@ -75,31 +82,42 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     protected override void Restart()
     {
         base.Restart();
+        board.PrepareState();
+
         cancelButton.SetActive(false);
         skipButton.gameObject.SetActive(true);
         currentPlayerId = 0;
         nextPlayerId = 1;
+
         stepIndex = -1;
         brain = new RandomBrain(2, 2);
+        NextPlayer();
+
+        complete = false;
     }
 
     private void ResetTouch(Vector3 vector, float time)
     {
-        swiped = false;
+        cancelTap = false;
     }
 
     private void DoTouch(Vector3 vector, float time)
     {
-        if (settingsActive || swiped || step == null) return;
+        if (settingsActive || cancelTap || step == null) return;
         Advance(step.Complete(new CompletionData(StepRequirement.Tap)));
     }
 
     protected override void PrepareMovementData(Vector2Int direction)
     {
-        if (settingsActive) return;
+        if (settingsActive || (step != null && step.requirement != StepRequirement.Swipe)) return;
 
+        ExecuteMove(direction);
+    }
+
+    private void ExecuteMove(Vector2Int direction)
+    {
         int moveScore = 0;
-        swiped = true;
+        cancelTap = true;
         if (step != null)
         {
             bool status = step.Complete(new CompletionData(step.requirement, direction));
@@ -111,12 +129,15 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
                 OnPlayerScore?.Invoke(moveScore, step.currentPlayer);
             }
 
+            OnChangePlayer?.Invoke(step.nextPlayer);
+
             // Fix the scoring mechanism next!
             // Then proceed to refining the tutorial.
             if (step.spawnTile)
             {
                 Vector2Int location = step.location;
                 board.SpawnTile(location.x, location.y, step.tileValue, step.playerOwner);
+                board.PrepareState();
             }
             Advance(status);
             return;
@@ -129,11 +150,11 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             {
                 OnPlayerScore?.Invoke(moveScore, currentPlayerId);
             }
-            board.AddTile(nextPlayerId);
+            board.AddTile(nextPlayerId, true);
             NextPlayer();
         }
-
     }
+
     private void NextPlayer()
     {
         currentPlayerId = nextPlayerId;
@@ -146,19 +167,27 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
         }
     }
 
+    private void PrevPlayer()
+    {
+        nextPlayerId = currentPlayerId;
+        currentPlayerId = currentPlayerId - 1 == 0 ? config.players : currentPlayerId - 1;
+
+        OnChangePlayer?.Invoke(currentPlayerId);
+    }
+
     private IEnumerator Act(Brain brain)
     {
         yield return new WaitForSeconds(0.3f);
         HypotheticalState state = new HypotheticalState(config.size.x, config.size.y, brain.GetId(), board.GetState());
         Vector2Int direction = brain.Think(state);
         //Debug.Log("Performing AI movement: " + direction);
-        PrepareMovementData(direction);
+        ExecuteMove(direction);
     }
 
     private IEnumerator DelayNextMove(Vector2Int direction)
     {
         yield return new WaitForSeconds(0.3f);
-        PrepareMovementData(direction);
+        ExecuteMove(direction);
     }
 
     private void SkipTutorial()
@@ -205,16 +234,59 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             step = null;
             cancelButton.SetActive(true);
             skipButton.gameObject.SetActive(false);
+            undoButton.SetActive(false);
             NextPlayer();
+            checker.ReloadButton();
+            complete = true;
             return;
         }
 
         step = steps[stepIndex];
         step.Activate();
+        undoButton.SetActive(stepIndex > 0);
 
         if (step.requirement == StepRequirement.AI)
         {
             StartCoroutine(DelayNextMove(step.direction));
+        }
+    }
+
+    protected override void Undo()
+    {
+        cancelTap = true;
+        if (complete)
+        {
+            int score = board.Undo();
+            PrevPlayer();
+            if (score > 0)
+            {
+                OnPlayerScore?.Invoke(-score, currentPlayerId);
+            }
+            return;
+        }
+
+        if (step != null)
+        {
+            step.Deactivate();
+        }
+        stepIndex--;
+        if (stepIndex <= 0)
+        {
+            stepIndex = 0;
+        }
+        undoButton.SetActive(stepIndex > 0);
+
+        step = steps[stepIndex];
+        step.Activate();
+
+        if (step == null || (step != null && (step.requirement == StepRequirement.AI || step.requirement == StepRequirement.Swipe)))
+        {
+            int score = board.Undo();
+            OnChangePlayer?.Invoke(step.currentPlayer);
+            if (score > 0)
+            {
+                OnPlayerScore?.Invoke(-score, step.currentPlayer);
+            }
         }
     }
 }

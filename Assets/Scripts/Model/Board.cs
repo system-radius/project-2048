@@ -170,7 +170,7 @@ public class Board : IBoardTrigger
         return false;
     }
 
-    private void PrepareState()
+    public void PrepareState()
     {
         if (state != null)
         {
@@ -303,19 +303,20 @@ public class Board : IBoardTrigger
             for (int y = 0; y < sizeY; y++)
             {
                 Tile tile = tiles[x, y];
-                if (tile == null && grid[x, y].value == 0) continue;
+                TileData data = grid[x, y];
+                if (tile == null && data.value == 0) continue;
 
-                if (grid[x, y].value == 0 && tile != null)
+                if (data.value == 0 && tile != null)
                 {
                     tiles[x, y] = null;
                     OnRemoveTile?.Invoke(new Vector2Int(x, y));
-                } else if (grid[x, y].value > 0 && tile == null)
+                } else if (data.value > 0 && tile == null)
                 {
-                    SpawnTile(x, y, grid[x, y].value, grid[x, y].playerId);
-                } else if (grid[x, y].value != tile.value)
+                    SpawnTile(x, y, data.value, data.playerId);
+                } else if (data.value != tile.value || data.playerId != tile.playerId)
                 {
-                    tiles[x, y].value = grid[x, y].value;
-                    tiles[x, y].playerId = grid[x, y].playerId;
+                    tiles[x, y].value = data.value;
+                    tiles[x, y].playerId = data.playerId;
                     OnUpdateTile?.Invoke(new Vector2Int(x, y), tiles[x, y].value, tiles[x, y].playerId);
                 }
             }
