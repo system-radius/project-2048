@@ -68,7 +68,10 @@ public class VersusScoreController : MonoBehaviour, IInitializable<IVersusScoreT
             scoreView.UpdateScore(scores[i]);
         }
 
-        undoButton.SetActive(true);
+        if (undoButton != null)
+        {
+            undoButton.SetActive(true);
+        }
         gameOverView.HideGameOver();
     }
 
@@ -85,7 +88,10 @@ public class VersusScoreController : MonoBehaviour, IInitializable<IVersusScoreT
             }
         }
 
-        undoButton.SetActive(false);
+        if (undoButton != null)
+        {
+            undoButton.SetActive(false);
+        }
         gameOverView.ShowGameOverText(names[highestScoreIndex] + " player\nhas won!");
     }
 }
