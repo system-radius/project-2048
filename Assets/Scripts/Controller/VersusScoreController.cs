@@ -12,10 +12,18 @@ public class VersusScoreController : MonoBehaviour, IInitializable<IVersusScoreT
     [SerializeField]
     private GameOverView gameOverView;
 
+    [SerializeField]
+    private GameObject undoButton;
+
     private int[] scores;
 
     private IGameOverTrigger gameOverTrigger;
     private IVersusScoreTrigger scoreTrigger;
+
+    private string[] names =
+    {
+        "RED", "BLUE"
+    };
 
     public void Initialize(IVersusScoreTrigger value)
     {
@@ -60,6 +68,7 @@ public class VersusScoreController : MonoBehaviour, IInitializable<IVersusScoreT
             scoreView.UpdateScore(scores[i]);
         }
 
+        undoButton.SetActive(true);
         gameOverView.HideGameOver();
     }
 
@@ -76,6 +85,7 @@ public class VersusScoreController : MonoBehaviour, IInitializable<IVersusScoreT
             }
         }
 
-        gameOverView.ShowGameOverText("Player " + (highestScoreIndex + 1) + " has won!");
+        undoButton.SetActive(false);
+        gameOverView.ShowGameOverText(names[highestScoreIndex] + " player\nhas won!");
     }
 }

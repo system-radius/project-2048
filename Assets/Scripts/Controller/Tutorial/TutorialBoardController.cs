@@ -51,6 +51,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
 
     protected override void OnEnable()
     {
+        saveKey = "tutorial_";
         base.OnEnable();
         touchManager.OnStartTouch += ResetTouch;
         touchManager.OnEndTouch += DoTouch;

@@ -25,6 +25,8 @@ public class VersusBoardController : BoardController, IPlayerChange, IVersusScor
 
     private Brain brain = null;
 
+    private Coroutine actCoroutine;
+
     protected override void OnEnable()
     {
         saveKey = "versus_";
@@ -51,6 +53,13 @@ public class VersusBoardController : BoardController, IPlayerChange, IVersusScor
     protected override void Restart()
     {
         base.Restart();
+        if (actCoroutine != null)
+        {
+            StopCoroutine(actCoroutine);
+            actCoroutine = null;
+        }
+
+        auto = false;
         currentPlayerId = 0;
         nextPlayerId = 1;
         NextPlayer();
@@ -146,7 +155,7 @@ public class VersusBoardController : BoardController, IPlayerChange, IVersusScor
         {
             if (currentPlayerId == brain.GetId())
             {
-                StartCoroutine(Act(brain));
+                actCoroutine = StartCoroutine(Act(brain));
             }
         }
     }
