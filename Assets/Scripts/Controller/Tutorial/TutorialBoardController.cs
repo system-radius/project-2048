@@ -151,7 +151,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             {
                 OnPlayerScore?.Invoke(moveScore, currentPlayerId);
             }
-            board.AddTile(nextPlayerId, true);
+            board.AddTile(nextPlayerId, false);
             NextPlayer();
         }
     }
