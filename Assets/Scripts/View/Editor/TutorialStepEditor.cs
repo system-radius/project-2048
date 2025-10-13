@@ -26,6 +26,14 @@ public class TutorialStepEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("playerOwner"));
         EditorGUI.EndDisabledGroup();
 
+        SerializedProperty highlightProp = serializedObject.FindProperty("highlightRegion");
+        EditorGUILayout.PropertyField(highlightProp);
+        EditorGUI.BeginDisabledGroup(!highlightProp.boolValue);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("maskPanel"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("highlightStart"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("highlightEnd"));
+        EditorGUI.EndDisabledGroup();
+
         serializedObject.ApplyModifiedProperties();
     }
 }

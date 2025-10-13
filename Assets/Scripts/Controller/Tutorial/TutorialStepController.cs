@@ -1,4 +1,7 @@
+using System.Collections;
+using System.Drawing;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TutorialStepController : MonoBehaviour
 {
@@ -15,9 +18,44 @@ public class TutorialStepController : MonoBehaviour
     public int tileValue;
     public int playerOwner;
 
+    public bool highlightRegion;
+    public Vector2 highlightStart;
+    public Vector2 highlightEnd;
+
+    public Material maskPanel;
+
     public void Activate()
     {
         panel.SetActive(true);
+        if (highlightRegion)
+        {
+            StartCoroutine(Highlight());
+        }
+    }
+
+    private IEnumerator Highlight()
+    {
+        yield return null;
+        //maskPanel = GetComponentInChildren<RectMask2D>().gameObject.GetComponent<RectTransform>();
+
+        /*
+        Vector2 localPos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            maskPanel.parent as RectTransform,
+            Utils.Instance.WorldToScreenPoint(highlightStart),
+            null,
+            out localPos
+        );
+        Debug.Log(localPos);
+        maskPanel.anchoredPosition = localPos;
+        */
+
+        Vector2 localPos = Utils.Instance.WorldToUIPoint((highlightStart + highlightEnd) / 2);
+        maskPanel.SetVector("_MaskPos", new Vector4(localPos.x, localPos.y, 0, 0));
+        float size = 100f / Screen.width;
+        float x = 1 + (highlightEnd.x - highlightStart.x);
+        float y = 1 + (highlightEnd.y - highlightStart.y);
+        maskPanel.SetVector("_MaskSize", new Vector4(size * x, size / 1.75f * y, 0, 0));
     }
 
     public void Deactivate()

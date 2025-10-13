@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Net;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -14,6 +15,18 @@ public class Utils : Singleton<Utils>
     {
         point.z = worldCamera.nearClipPlane;
         return worldCamera.ScreenToWorldPoint(point);
+    }
+
+    public Vector3 WorldToUIPoint(Vector3 point)
+    {
+        //point.z = worldCamera.nearClipPlane;
+        return worldCamera.WorldToViewportPoint(point);
+    }
+
+    public Vector3 WorldToScreenPoint(Vector3 point)
+    {
+        //point.z += worldCamera.nearClipPlane;
+        return worldCamera.WorldToScreenPoint(point);
     }
 
     public IEnumerator LerpTransform(Transform transform, Vector3 target, float duration, Func<Transform, Vector3> getter, Action<Transform, Vector3> setter, IEnumerator chainedCoroutine = null)
