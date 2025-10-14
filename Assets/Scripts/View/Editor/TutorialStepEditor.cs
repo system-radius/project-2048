@@ -32,6 +32,8 @@ public class TutorialStepEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maskPanel"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("highlightStart"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("highlightEnd"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("size"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("targetObject"));
         EditorGUI.EndDisabledGroup();
 
         serializedObject.ApplyModifiedProperties();

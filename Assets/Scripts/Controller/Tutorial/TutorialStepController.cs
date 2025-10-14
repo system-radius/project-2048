@@ -21,6 +21,8 @@ public class TutorialStepController : MonoBehaviour
     public bool highlightRegion;
     public Vector2 highlightStart;
     public Vector2 highlightEnd;
+    public float size = -1;
+    public GameObject targetObject;
 
     public Material maskPanel;
 
@@ -51,11 +53,22 @@ public class TutorialStepController : MonoBehaviour
         */
 
         Vector2 localPos = Utils.Instance.WorldToUIPoint((highlightStart + highlightEnd) / 2);
+        if (targetObject != null)
+        {
+            localPos = Utils.Instance.WorldToUIPoint(Utils.Instance.ScreenToWorldPoint(targetObject.transform.position));
+        }
         maskPanel.SetVector("_MaskPos", new Vector4(localPos.x, localPos.y, 0, 0));
-        float size = 100f / Screen.width;
+        Vector2 tempSize = Utils.Instance.WorldToUIPoint(new Vector2(0, 1));
+        float size = tempSize.y - tempSize.x;
+        if (this.size >= 0)
+        {
+            size = this.size;
+        }
+        //Debug.Log("Temp size: " + tempSize + ", Final size: " + size);
+        size /= 1.15f;
         float x = 1 + (highlightEnd.x - highlightStart.x);
         float y = 1 + (highlightEnd.y - highlightStart.y);
-        maskPanel.SetVector("_MaskSize", new Vector4(size * x, size / 1.75f * y, 0, 0));
+        maskPanel.SetVector("_MaskSize", new Vector4(size * x, size * y, 0, 0));
     }
 
     public void Deactivate()

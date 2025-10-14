@@ -51,9 +51,10 @@ Shader "UI/InverseMask"
             fixed4 frag(v2f i) : SV_Target
             {
                 float2 uv = i.uv;
+                float aspect = _ScreenParams.x / _ScreenParams.y;
 
-                // Compute normalized distance from mask center
-                float2 maskUV = (uv - _MaskPos) / _MaskSize;
+                float2 correctedSize = float2(_MaskSize.x, _MaskSize.y * aspect);
+                float2 maskUV = (uv - _MaskPos) / correctedSize;
 
                 // Check if inside rectangle (both x and y in -0.5..0.5 range)
                 float inside = step(-0.5, maskUV.x) * step(maskUV.x, 0.5) *

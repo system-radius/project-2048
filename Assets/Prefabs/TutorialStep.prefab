@@ -58,15 +58,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.9019608}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 1353578200909871006, guid: 1455dd6a09969704a97a6298fcd81626, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -127,3 +127,13 @@ MonoBehaviour:
   panel: {fileID: 2704099503129882814}
   requirement: 0
   direction: {x: 0, y: 0}
+  currentPlayer: 0
+  nextPlayer: 0
+  spawnTile: 0
+  location: {x: 0, y: 0}
+  tileValue: 0
+  playerOwner: 0
+  highlightRegion: 0
+  highlightStart: {x: 0, y: 0}
+  highlightEnd: {x: 0, y: 0}
+  maskPanel: {fileID: 0}

@@ -194,7 +194,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
     private void SkipTutorial()
     {
         step.Deactivate();
-        for (int i = stepIndex; i < steps.Count; i++)
+        for (int i = stepIndex; i < steps.Count - 1; i++)
         {
             var currentStep = steps[i];
             if (currentStep.requirement == StepRequirement.AI || currentStep.requirement == StepRequirement.Swipe)
@@ -212,7 +212,7 @@ public class TutorialBoardController : BoardController, IPlayerChange, IVersusSc
             }
         }
 
-        stepIndex = steps.Count - 1;
+        stepIndex = steps.Count - 2;
         step = steps[stepIndex];
         undoButton.SetActive(false);
         Advance(true);
